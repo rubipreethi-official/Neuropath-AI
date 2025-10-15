@@ -6,13 +6,19 @@ interface ChatbotAnalysisProps {
 }
 
 export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
-  const [messages, setMessages] = useState<Array<{ role: 'bot' | 'user'; text: string }>>([
-    { role: 'bot', text: "Hello! I'm here to help you discover your skills and passions. Let's start with a few questions to understand you better." }
+  const [messages, setMessages] = useState<
+    Array<{ role: 'bot' | 'user'; text: string }>
+  >([
+    {
+      role: 'bot',
+      text: "Hello! I'm here to help you discover your skills and passions. Let's start with a few questions to understand you better."
+    }
   ]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full">
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
             <MessageCircle size={40} className="text-purple-300" />
@@ -21,10 +27,12 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
             Let's Discover Your Path
           </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-            Our AI will chat with you to understand your interests, strengths, and aspirations
+            Our AI will chat with you to understand your interests, strengths,
+            and aspirations
           </p>
         </div>
 
+        {/* Chat Container */}
         <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl overflow-hidden">
           <div className="bg-purple-800/50 border-b border-purple-700/50 px-6 py-4">
             <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -34,10 +42,13 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
           </div>
 
           <div className="h-[500px] overflow-y-auto p-6 space-y-4">
+            {/* Existing messages */}
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
               >
                 <div
                   className={`max-w-[80%] rounded-2xl px-6 py-4 ${
@@ -51,46 +62,35 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
               </div>
             ))}
 
-            <div className="bg-purple-800/30 border border-purple-700/50 rounded-xl p-6 text-center">
-              <div className="mb-4">
-                <MessageCircle size={48} className="text-purple-400 mx-auto mb-3" />
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Chatbot Integration Point
-                </h3>
-                <p className="text-purple-300 mb-4">
-                  This is where you'll integrate your custom chatbot with trained knowledge to analyze the student's skills and passions through an interactive conversation.
-                </p>
-                <div className="bg-purple-900/50 rounded-lg p-4 text-left text-sm text-purple-200">
-                  <p className="font-semibold mb-2">Integration Notes:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>Connect your AI chatbot API here</li>
-                    <li>Implement message handling and responses</li>
-                    <li>Store conversation data for analysis</li>
-                    <li>Process results to identify skills and interests</li>
-                  </ul>
-                </div>
+            {/* Bot Image + Chatbase iframe */}
+            <div className="bg-purple-800/30 border border-purple-700/50 rounded-xl p-6 text-center space-y-6">
+              {/* Bot Picture */}
+              <div className="flex justify-center">
+                <img
+                  src="/path-to-your-bot-image.png" // Replace with your bot image URL
+                  alt="Career Bot"
+                  className="w-32 h-32 rounded-full border-4 border-purple-600/50 object-cover"
+                />
               </div>
-            </div>
-          </div>
 
-          <div className="border-t border-purple-700/50 p-6">
-            <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder="Type your message here..."
-                className="flex-1 px-4 py-3 rounded-lg bg-purple-950/50 border border-purple-700/50 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                disabled
-              />
-              <button
-                disabled
-                className="px-6 py-3 rounded-lg bg-purple-800/50 text-purple-400 border border-purple-700/50 cursor-not-allowed"
-              >
-                Send
-              </button>
+              {/* Chatbase Chatbot Embed */}
+              <div className="rounded-xl overflow-hidden border border-purple-700/50 bg-purple-800/30">
+                <iframe
+                  src="https://www.chatbase.co/chatbot-iframe/jiaVrX6-wd8oYDtP0SuZm"
+                  width="100%"
+                  height="700"
+                  frameBorder="0"
+                  allow="microphone; camera"
+                  title="Career Discovery Chatbot"
+                  className="rounded-xl"
+                  style={{ minHeight: '700px' }}
+                ></iframe>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Completion Button */}
         <div className="mt-8 text-center">
           <button
             onClick={onComplete}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LogIn, UserPlus, ArrowRight } from 'lucide-react';
 import { AuthModal } from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
-
+import AIvideo from "./AI-NPvideo.mp4";
 interface LandingPageProps {
   onStart: () => void;
 }
@@ -62,14 +62,16 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
 
           <div className="relative w-full max-w-4xl mx-auto mb-12 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50 border-4 border-purple-700/50">
-            <video
-              className="w-full aspect-video object-cover"
-              controls
-              poster="https://images.pexels.com/photos/3184357/pexels-photo-3184357.jpeg?auto=compress&cs=tinysrgb&w=1200"
-            >
-              <source src="/videos/neuropath-intro.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+           <video
+    src={AIvideo}
+    controls
+    autoPlay
+    loop
+    muted
+    className="w-full h-auto rounded-3xl"
+  >
+    Your browser does not support the video tag.
+  </video>
           </div>
 
           <div className="text-center">
