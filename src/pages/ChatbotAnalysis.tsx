@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MessageCircle, CheckCircle } from 'lucide-react';
-
+ 
 interface ChatbotAnalysisProps {
   onComplete: () => void;
 }
@@ -37,7 +37,7 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
           <div className="bg-purple-800/50 border-b border-purple-700/50 px-6 py-4">
             <h2 className="text-xl font-semibold text-white flex items-center gap-2">
               <MessageCircle size={24} className="text-purple-300" />
-              Career Discovery Assistant
+              Neuropath career chatbot
             </h2>
           </div>
 
@@ -67,7 +67,7 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
               {/* Bot Picture */}
               <div className="flex justify-center">
                 <img
-                  src="/path-to-your-bot-image.png" // Replace with your bot image URL
+                  src='../../assets/NeuroPath_Robot_Optimized.png' 
                   alt="Career Bot"
                   className="w-32 h-32 rounded-full border-4 border-purple-600/50 object-cover"
                 />
@@ -81,7 +81,7 @@ export function ChatbotAnalysis({ onComplete }: ChatbotAnalysisProps) {
                   height="700"
                   frameBorder="0"
                   allow="microphone; camera"
-                  title="Career Discovery Chatbot"
+                  title="NeuroPath Career Chatbot"
                   className="rounded-xl"
                   style={{ minHeight: '700px' }}
                 ></iframe>
