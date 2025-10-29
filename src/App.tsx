@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import { LandingPage } from './pages/LandingPage';
 import { SkillPassionQuestion } from './pages/SkillPassionQuestion';
+import { Chat2 } from './pages/chat2';
 import { ChatbotAnalysis } from './pages/ChatbotAnalysis';
 import { RelevantSkillQuestion } from './pages/RelevantSkillQuestion';
 import { SkillDevelopmentPrograms } from './pages/SkillDevelopmentPrograms';
@@ -11,6 +12,7 @@ import { CareerReport } from './pages/CareerReport';
 type Page =
   | 'landing'
   | 'skill-passion-question'
+  | 'chat2'
   | 'chatbot-analysis'
   | 'relevant-skill-question'
   | 'skill-development'
@@ -19,13 +21,19 @@ type Page =
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
+  const [userPassion, setUserPassion] = useState<string>('');
 
   const handleSkillPassionAnswer = (knowsSkill: boolean) => {
     if (knowsSkill) {
       setCurrentPage('relevant-skill-question');
     } else {
-      setCurrentPage('chatbot-analysis');
+      setCurrentPage('chat2');
     }
+  };
+
+  const handleChat2Complete = (predictedPassion: string) => {
+    setUserPassion(predictedPassion);
+    setCurrentPage('chatbot-analysis');
   };
 
   const handleChatbotComplete = () => {
@@ -60,6 +68,9 @@ function App() {
       {currentPage === 'skill-passion-question' && (
         <SkillPassionQuestion onAnswer={handleSkillPassionAnswer} />
       )}
+      {currentPage === 'chat2' && (
+        <Chat2 onComplete={handleChat2Complete} />
+      )}
       {currentPage === 'chatbot-analysis' && (
         <ChatbotAnalysis onComplete={handleChatbotComplete} />
       )}
@@ -73,7 +84,7 @@ function App() {
         <CoursesAndScholarships onContinue={handleCoursesAndScholarshipsContinue} />
       )}
       {currentPage === 'career-report' && (
-        <CareerReport onRestart={handleRestart} />
+        <CareerReport onRestart={handleRestart} passion={userPassion} />
       )}
     </AuthProvider>
   );
