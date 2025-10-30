@@ -11,6 +11,7 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps) {
   const [mode, setMode] = useState(initialMode);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,11 +28,15 @@ export function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps
     try {
       const { error } = mode === 'signin'
         ? await signIn(email, password)
-        : await signUp(email, password);
+        : await signUp(email, password, name);
 
       if (error) {
         setError((error as any)?.message || 'An error occurred');
       } else {
+        // Clear form
+        setName('');
+        setEmail('');
+        setPassword('');
         onClose();
       }
     } catch {
@@ -56,6 +61,20 @@ export function AuthModal({ isOpen, onClose, mode: initialMode }: AuthModalProps
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === 'signup' && (
+            <div>
+              <label className="block text-purple-200 mb-2 text-sm font-medium">Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Rubi Preethi"
+                required
+                className="w-full px-4 py-3 rounded-lg bg-purple-950/50 border border-purple-700/50 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          )}
+          
           <div>
             <label className="block text-purple-200 mb-2 text-sm font-medium">Email</label>
             <input

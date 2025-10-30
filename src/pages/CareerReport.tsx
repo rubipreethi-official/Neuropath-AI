@@ -7,9 +7,10 @@ import { getCareerData } from '../data/careerDataset';
 interface CareerReportProps {
   onRestart: () => void;
   passion: string;
+  userName: string;
 }
 
-export function CareerReport({ onRestart, passion }: CareerReportProps) {
+export function CareerReport({ onRestart, passion, userName }: CareerReportProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const careerData = getCareerData(passion);
   
@@ -86,7 +87,7 @@ export function CareerReport({ onRestart, passion }: CareerReportProps) {
             <FileText size={40} className="text-purple-300" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Your Personalized Career Report
+            {userName}'s Personalized Career Report
           </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
             A comprehensive analysis of your career path and recommendations
@@ -97,7 +98,7 @@ export function CareerReport({ onRestart, passion }: CareerReportProps) {
           <div className="bg-gradient-to-r from-purple-800 to-purple-900 px-8 py-6 border-b border-purple-700/50">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">Career Path Analysis</h2>
+                <h2 className="text-2xl font-bold text-white mb-1">Career Path Analysis for {userName}</h2>
                 <p className="text-purple-300 text-sm">Generated on {new Date().toLocaleDateString()}</p>
                 <p className="text-purple-200 font-semibold mt-1">Your Identified Passion: {careerData.passion}</p>
               </div>

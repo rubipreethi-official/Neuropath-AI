@@ -1,13 +1,23 @@
-import { Lightbulb, HelpCircle } from 'lucide-react';
+import { Lightbulb, HelpCircle, ArrowLeft } from 'lucide-react';
 
 interface SkillPassionQuestionProps {
   onAnswer: (knowsSkill: boolean) => void;
+  onBack?: () => void;
 }
 
-export function SkillPassionQuestion({ onAnswer }: SkillPassionQuestionProps) {
+export function SkillPassionQuestion({ onAnswer, onBack }: SkillPassionQuestionProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-4xl w-full">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            Back to Home
+          </button>
+        )}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
             <Lightbulb size={40} className="text-purple-300" />

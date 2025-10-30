@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { BookOpen, Award, ExternalLink, ArrowRight, Building, Calendar, IndianRupee } from 'lucide-react';
+import { BookOpen, Award, ExternalLink, ArrowRight, Building, Calendar, IndianRupee, ArrowLeft } from 'lucide-react';
 
 interface CoursesAndScholarshipsProps {
   onContinue: () => void;
+  onBack?: () => void;
 }
 
-export function CoursesAndScholarships({ onContinue }: CoursesAndScholarshipsProps) {
+export function CoursesAndScholarships({ onContinue, onBack }: CoursesAndScholarshipsProps) {
   const [activeTab, setActiveTab] = useState<'courses' | 'scholarships'>('courses');
 
   const courses = [
@@ -93,6 +94,15 @@ export function CoursesAndScholarships({ onContinue }: CoursesAndScholarshipsPro
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 px-6 py-12">
       <div className="max-w-7xl mx-auto">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            Back
+          </button>
+        )}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
             <Award size={40} className="text-purple-300" />

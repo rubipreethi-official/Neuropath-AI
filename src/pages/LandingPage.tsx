@@ -10,11 +10,21 @@ interface LandingPageProps {
 export function LandingPage({ onStart }: LandingPageProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const { user } = useAuth();
+  const { user, userName } = useAuth();
 
   const openAuth = (mode: 'signin' | 'signup') => {
     setAuthMode(mode);
     setAuthModalOpen(true);
+  };
+
+  const handleStartJourney = () => {
+    if (!user) {
+      // User not authenticated, open signup modal
+      openAuth('signup');
+      return;
+    }
+    // User is authenticated, proceed
+    onStart();
   };
 
   return (
@@ -25,7 +35,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
             Neuropath
           </div>
 
-          {!user && (
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-purple-200 px-4 py-2 rounded-lg bg-purple-800/30 border border-purple-600/50">
+                Welcome, {userName || 'User'}!
+              </span>
+            </div>
+          ) : (
             <div className="flex gap-3">
               <button
                 onClick={() => openAuth('signin')}
@@ -76,12 +92,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
           <div className="text-center">
             <button
-              onClick={onStart}
+              onClick={handleStartJourney}
               className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
             >
-              Start Your Journey
+              {user ? 'Start Your Journey' : 'Sign Up to Start'}
               <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
             </button>
+            {!user && (
+              <p className="text-purple-300 text-sm mt-4">
+                Please sign up or sign in to begin your career guidance journey
+              </p>
+            )}
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">

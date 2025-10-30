@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Send } from 'lucide-react';
+import { Brain, Send, ArrowLeft } from 'lucide-react';
 
 interface Message {
   text: string;
@@ -8,6 +8,8 @@ interface Message {
 
 interface Chat2Props {
   onComplete: (predictedPassion: string) => void;
+  userName: string;
+  onBack?: () => void;
 }
 
 const categories = [
@@ -80,7 +82,7 @@ const featureMappings: { [key: string]: number[] } = {
   'Cyber / IT': [4, 2, 3, 1, 1, 2, 1, 1, 2, 4]
 };
 
-export function Chat2({ onComplete }: Chat2Props) {
+export function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   const [messages, setMessages] = useState<Message[]>([
     { text: "Hello! I'm here to help you discover your area of interest based on your passions and skills. I'll ask you a few questions on a scale of 1-5 (1: not interested, 5: very interested). Let's start!", sender: 'bot' }
   ]);
@@ -204,7 +206,7 @@ export function Chat2({ onComplete }: Chat2Props) {
     console.log('User responses:', userResponses);
 
     setTimeout(() => {
-      addBotMessage(`Based on your responses, your primary area of interest is: **${predictedArea}** (${confidenceScore}% match). This is determined using cosine similarity analysis of your interest patterns!`);
+      addBotMessage(`${userName}, based on your responses, your primary area of interest is: **${predictedArea}** (${confidenceScore}% match). This is determined using cosine similarity analysis of your interest patterns!`);
       
       if (top3.length > 1) {
         const alternativesText = `Alternative matches: ${top3.slice(1, 3).map(s => `${s.category} (${(s.similarity * 100).toFixed(1)}%)`).join(', ')}`;
@@ -234,6 +236,15 @@ export function Chat2({ onComplete }: Chat2Props) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            Back
+          </button>
+        )}
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
