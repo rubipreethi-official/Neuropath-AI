@@ -169,3 +169,4 @@ For production:
 4. Update CORS settings in backend for production domain
 5. Ensure MongoDB Atlas allows connections from production servers
 
+
