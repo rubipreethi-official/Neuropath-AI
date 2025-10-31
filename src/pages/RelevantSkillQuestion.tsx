@@ -1,0 +1,85 @@
+import { Target, TrendingUp, ArrowLeft } from 'lucide-react';
+
+interface RelevantSkillQuestionProps {
+  onAnswer: (hasRelevantSkill: boolean) => void;
+  onBack?: () => void;
+}
+
+export function RelevantSkillQuestion({ onAnswer, onBack }: RelevantSkillQuestionProps) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
+      <div className="max-w-4xl w-full">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            Back
+          </button>
+        )}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
+            <Target size={40} className="text-purple-300" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Assess Your Skills
+          </h1>
+          <p className="text-xl text-purple-200 max-w-2xl mx-auto">
+            Now that we know your interests, let's determine if you have the relevant skills to pursue them
+          </p>
+        </div>
+
+        <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8 md:p-12 mb-8">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">
+            Do you have relevant skills for your passion?
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button
+              onClick={() => onAnswer(true)}
+              className="group relative overflow-hidden bg-gradient-to-br from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 border-2 border-purple-600/50 hover:border-purple-500 rounded-2xl p-8 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/20 to-purple-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <div className="relative">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-700/50 mx-auto mb-4">
+                  <TrendingUp size={32} className="text-purple-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">Yes, I Have Skills</h3>
+                <p className="text-purple-200">
+                  I have relevant skills and I'm ready to explore career opportunities
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onAnswer(false)}
+              className="group relative overflow-hidden bg-gradient-to-br from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 border-2 border-purple-600/50 hover:border-purple-500 rounded-2xl p-8 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/20 to-purple-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <div className="relative">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-700/50 mx-auto mb-4">
+                  <Target size={32} className="text-purple-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">No, I Need Training</h3>
+                <p className="text-purple-200">
+                  I need to develop skills through courses and workshops
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-purple-800/30 border border-purple-700/50 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <TrendingUp size={20} className="text-purple-400" />
+            Why This Matters
+          </h3>
+          <p className="text-purple-200 text-sm">
+            Understanding your current skill level helps us recommend the right path for you. Whether you need training or are ready to explore careers, we'll guide you accordingly.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
