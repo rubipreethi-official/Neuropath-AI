@@ -177,40 +177,11 @@ Our mission is to empower the next generation to make informed decisions about t
 
 ---
 
-## 📞 Get Started
 
-Ready to discover your perfect career path? 
-
-**[Sign Up Now](#)** and take the first step toward your future!
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from developers, career counselors, and education enthusiasts who share our vision of making career guidance accessible to all.
-
----
-
-## 📄 License
-
-[Your License Information]
-
----
-
-## 💬 Support
-
-Have questions or need help? We're here for you!
-
-- 📧 Email: support@neuropath.com
-- 💬 Chat: Available on our website
-- 📱 Social Media: Follow us for career tips and updates
-
----
-
-<div align="center">
 
 **NeuroPath - Because Every Student Deserves the Right Direction** 🌟
 
 *Turning Potential into Purpose*
+HAPPY CODING:)
+           - RUBI PREETHI
 
-</div>
