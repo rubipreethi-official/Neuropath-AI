@@ -1,0 +1,366 @@
+S No,Passion,Skill,Course/Degree,Institution,Training/Programme
+1,Software Development,Python Programming,B.Tech Computer Science,IIT Bombay,NPTEL - Programming in Python
+2,Software Development,Java Development,B.Tech Computer Science,IIT Delhi,Coursera - Java Programming Specialization
+3,Software Development,Web Development,BCA,Delhi University,SWAYAM - Web Development Fundamentals
+4,Artificial Intelligence,Machine Learning,M.Tech AI,IIT Madras,NPTEL - Introduction to Machine Learning
+5,Artificial Intelligence,Deep Learning,B.Tech CSE,IIT Kanpur,Google AI Crash Course
+6,Data Science,Data Analytics,B.Sc Data Science,BITS Pilani,PMKVY - Data Analytics Training
+7,Data Science,Python & SQL,MCA,NIT Trichy,SWAYAM - Database Management Systems
+8,Cybersecurity,Ethical Hacking,B.Tech Cybersecurity,Amity University,NSDC - Cybersecurity Essentials
+9,Cybersecurity,Network Security,M.Tech Network Security,Anna University,NPTEL - Cryptography & Network Security
+10,Cloud Computing,AWS,B.Tech IT,VIT Vellore,AWS Cloud Technical Essentials
+11,Cloud Computing,Azure Administration,MCA,Manipal University,Microsoft Azure Fundamentals
+12,Mobile Development,Android Development,B.Tech CSE,IIIT Hyderabad,Google Android Development Course
+13,Mobile Development,iOS Development,BCA,Christ University,Udemy - iOS App Development
+14,Game Development,Unity 3D,B.Sc Computer Science,SRM University,NSDC - Game Design & Development
+15,Game Development,Unreal Engine,B.Tech CSE,Lovely Professional University,Unity Learn Platform
+16,Blockchain Technology,Smart Contracts,B.Tech Blockchain,Amity University,NPTEL - Blockchain and Applications
+17,Blockchain Technology,Cryptocurrency,M.Tech Blockchain,BITS Pilani,Coursera - Blockchain Specialization
+18,DevOps,CI/CD Pipeline,B.Tech IT,Manipal Institute of Technology,PMKVY - DevOps Training
+19,DevOps,Docker & Kubernetes,MCA,NIT Surathkal,NPTEL - Cloud Computing
+20,Internet of Things,Embedded Systems,B.Tech ECE,IIT Kharagpur,SWAYAM - Introduction to IoT
+21,Internet of Things,Sensor Networks,M.Tech IoT,VIT Vellore,NSDC - IoT Skills Development
+22,Robotics,Robot Programming,B.Tech Robotics,Manipal University,NPTEL - Robotics
+23,Robotics,Automation,M.Tech Mechatronics,PSG College of Technology,PMKVY - Industrial Automation
+24,Medical Science,Clinical Practice,MBBS,AIIMS Delhi,WHO Basic Life Support Training
+25,Medical Science,Surgery,MBBS,CMC Vellore,Government Hospital Internship Program
+26,Medical Science,Pediatrics,MD Pediatrics,JIPMER Puducherry,IAP Pediatric Training
+27,Pharmacy,Drug Development,B.Pharm,Jamia Hamdard,NPTEL - Pharmaceutical Chemistry
+28,Pharmacy,Clinical Pharmacy,M.Pharm,NIPER Mohali,PMKVY - Pharmacy Technician Course
+29,Nursing,Patient Care,B.Sc Nursing,CMC Vellore,Government Nursing Training Program
+30,Nursing,Critical Care,M.Sc Nursing,AIIMS Delhi,Red Cross Nursing Workshop
+31,Physiotherapy,Sports Rehabilitation,BPT,Manipal College,NSDC - Physiotherapy Assistant
+32,Physiotherapy,Orthopedic Care,MPT,CMC Vellore,PMKVY - Healthcare Skills
+33,Dentistry,Oral Surgery,BDS,Manipal College of Dental Sciences,IDA Dental Workshop
+34,Dentistry,Orthodontics,MDS,Maulana Azad Institute,NPTEL - Oral Health Sciences
+35,Medical Lab Technology,Diagnostics,B.Sc MLT,Christian Medical College,PMKVY - Medical Lab Technician
+36,Medical Lab Technology,Pathology,Diploma MLT,IGNOU,NSDC - Laboratory Skills
+37,Radiology,Medical Imaging,B.Sc Radiology,Manipal University,PMKVY - Radiology Technician
+38,Radiology,CT/MRI Technology,Diploma Radiology,IGNOU,Government Hospital Training
+39,Psychology,Clinical Psychology,M.A Psychology,Delhi University,NPTEL - Introduction to Psychology
+40,Psychology,Counseling,M.Phil Clinical Psychology,NIMHANS Bangalore,PMKVY - Counseling Skills
+41,Mechanical Engineering,CAD Design,B.Tech Mechanical,IIT Bombay,NPTEL - Engineering Drawing
+42,Mechanical Engineering,Manufacturing,M.Tech Production,NIT Trichy,PMKVY - CNC Machine Operator
+43,Civil Engineering,Construction Management,B.Tech Civil,IIT Madras,NPTEL - Construction Planning
+44,Civil Engineering,Structural Design,M.Tech Structural,Anna University,NSDC - Construction Skills
+45,Electrical Engineering,Power Systems,B.Tech Electrical,IIT Kharagpur,NPTEL - Power System Engineering
+46,Electrical Engineering,Renewable Energy,M.Tech Power,NIT Surathkal,PMKVY - Solar Technician Training
+47,Electronics Engineering,VLSI Design,B.Tech ECE,IIT Delhi,NPTEL - VLSI Design
+48,Electronics Engineering,Embedded Systems,M.Tech VLSI,BITS Pilani,NSDC - Electronics Technician
+49,Chemical Engineering,Process Engineering,B.Tech Chemical,IIT Bombay,NPTEL - Chemical Engineering
+50,Chemical Engineering,Petrochemicals,M.Tech Chemical,Anna University,PMKVY - Chemical Plant Operator
+51,Aerospace Engineering,Aircraft Design,B.Tech Aerospace,IIT Kanpur,NPTEL - Aerospace Engineering
+52,Aerospace Engineering,Aerodynamics,M.Tech Aerospace,IIT Madras,NSDC - Aviation Maintenance
+53,Automobile Engineering,Vehicle Design,B.Tech Automobile,VIT Vellore,NPTEL - Automotive Engineering
+54,Automobile Engineering,Electric Vehicles,M.Tech Automobile,BITS Pilani,PMKVY - Automobile Technician
+55,Biotechnology,Genetic Engineering,B.Tech Biotechnology,IIT Kharagpur,NPTEL - Biotechnology
+56,Biotechnology,Bioinformatics,M.Tech Biotechnology,JNU Delhi,SWAYAM - Bioinformatics
+57,Environmental Engineering,Waste Management,B.Tech Environmental,IIT Delhi,NPTEL - Environmental Science
+58,Environmental Engineering,Water Treatment,M.Tech Environmental,Anna University,PMKVY - Water Quality Technician
+59,Architecture,Building Design,B.Arch,IIT Roorkee,NPTEL - Architecture & Planning
+60,Architecture,Urban Planning,M.Arch,SPA Delhi,NSDC - Construction Drawing
+61,Interior Design,Space Planning,B.Des Interior Design,NIFT Delhi,PMKVY - Interior Designer Training
+62,Interior Design,Furniture Design,M.Des Interior Design,NID Ahmedabad,SWAYAM - Design Fundamentals
+63,Fashion Design,Garment Design,B.Des Fashion Design,NIFT Mumbai,NSDC - Fashion Design Course
+64,Fashion Design,Textile Design,M.Des Fashion Design,Pearl Academy,PMKVY - Apparel Training
+65,Graphic Design,Digital Illustration,B.Des Graphic Design,NID Ahmedabad,NPTEL - Design Thinking
+66,Graphic Design,Brand Design,M.Des Graphic Design,MIT Institute of Design,Adobe Creative Cloud Training
+67,Animation,3D Animation,B.Sc Animation,Arena Animation,NSDC - Animation & VFX
+68,Animation,Visual Effects,M.Sc Animation,Framebotics Academy,PMKVY - Animation Training
+69,Fine Arts,Painting,BFA,Visva Bharati University,Government Art Workshop
+70,Fine Arts,Sculpture,MFA,MS University Baroda,Lalit Kala Akademi Program
+71,Photography,Commercial Photography,Diploma Photography,JJ School of Art,NPTEL - Digital Photography
+72,Photography,Wildlife Photography,Certificate Photography,National Geographic India,WWF Photography Workshop
+73,Film Making,Direction,B.A Film Making,FTII Pune,NPTEL - Film Appreciation
+74,Film Making,Cinematography,M.A Film Making,Satyajit Ray Film Institute,NSDC - Media & Entertainment
+75,Music Production,Sound Engineering,B.A Music Production,KM Music Conservatory,PMKVY - Audio Recording
+76,Music Production,Music Composition,Diploma Music,AR Rahman Music Academy,SWAYAM - Music Fundamentals
+77,Journalism,Print Journalism,B.A Journalism,Delhi University,NPTEL - Media Studies
+78,Journalism,Broadcast Journalism,M.A Journalism,Indian Institute of Journalism,NSDC - Media Skills
+79,Mass Communication,Public Relations,B.A Mass Communication,Manipal University,PMKVY - Communication Skills
+80,Mass Communication,Digital Media,M.A Mass Communication,Symbiosis Pune,SWAYAM - Digital Marketing
+81,Content Writing,Creative Writing,B.A English,St. Stephens College,Coursera - Creative Writing
+82,Content Writing,Technical Writing,M.A English,JNU Delhi,NPTEL - English Communication
+83,Digital Marketing,SEO,BBA Marketing,Christ University,Google Digital Marketing Course
+84,Digital Marketing,Social Media Marketing,MBA Marketing,IIM Bangalore,PMKVY - Digital Marketing
+85,Business Management,Operations Management,BBA,NMIMS Mumbai,NPTEL - Operations Management
+86,Business Management,Strategic Management,MBA,IIM Ahmedabad,SWAYAM - Business Strategy
+87,Human Resources,Talent Management,BBA HR,Symbiosis Pune,NPTEL - Human Resource Management
+88,Human Resources,Organizational Development,MBA HR,XLRI Jamshedpur,PMKVY - HR Skills
+89,Finance,Financial Analysis,B.Com Finance,Shri Ram College,NPTEL - Financial Management
+90,Finance,Investment Banking,MBA Finance,IIM Calcutta,NSDC - Financial Services
+91,Accounting,Financial Accounting,B.Com Accounting,Hindu College Delhi,PMKVY - Tally Accounting
+92,Accounting,Taxation,M.Com,Loyola College Chennai,SWAYAM - Income Tax & GST
+93,Economics,Economic Policy,B.A Economics,Delhi School of Economics,NPTEL - Microeconomics
+94,Economics,Development Economics,M.A Economics,JNU Delhi,SWAYAM - Indian Economy
+95,Banking,Retail Banking,B.Com Banking,Narsee Monjee College,PMKVY - Banking Operations
+96,Banking,Investment Banking,MBA Banking,IIM Lucknow,NSDC - Banking & Finance
+97,Insurance,Risk Management,BBA Insurance,University of Mumbai,PMKVY - Insurance Agent Training
+98,Insurance,Actuarial Science,M.Sc Actuarial Science,Institute of Actuaries India,NSDC - Insurance Skills
+99,Stock Market Trading,Technical Analysis,Certificate Trading,NSE Academy,NSE Certification in Financial Markets
+100,Stock Market Trading,Fundamental Analysis,PG Diploma Capital Markets,NISM Mumbai,NISM Certifications
+101,Law,Corporate Law,LLB,National Law School Bangalore,NPTEL - Introduction to Law
+102,Law,Criminal Law,LLM,NALSAR Hyderabad,SWAYAM - Legal Studies
+103,Law,Intellectual Property,LLM IP,IIT Kharagpur,NPTEL - IPR
+104,Teaching,Primary Education,B.Ed,Delhi University,NPTEL - Pedagogy of School Subjects
+105,Teaching,Secondary Education,M.Ed,Jamia Millia Islamia,PMKVY - Teaching Skills
+106,Special Education,Learning Disabilities,B.Ed Special Education,RCI Approved Institutes,NSDC - Special Educator Training
+107,Special Education,Speech Therapy,M.Ed Special Education,AYJNISHD Mumbai,Government Rehabilitation Centers
+108,Early Childhood Education,Preschool Teaching,Diploma ECE,IGNOU,SWAYAM - Early Childhood Care
+109,Early Childhood Education,Montessori Training,Certificate Montessori,Indian Montessori Training,Montessori India Workshop
+110,Physical Education,Sports Coaching,B.P.Ed,Lakshmibai National Institute,NSDC - Sports Coach Training
+111,Physical Education,Fitness Training,M.P.Ed,Punjabi University Patiala,PMKVY - Fitness Trainer
+112,Hotel Management,Hospitality Management,BHM,IHM Mumbai,NSDC - Hospitality Skills
+113,Hotel Management,Food & Beverage,BHM,IHM Delhi,PMKVY - F&B Service Training
+114,Culinary Arts,Professional Cooking,Diploma Culinary Arts,IHM Bangalore,NSDC - Chef Training
+115,Culinary Arts,Bakery & Confectionery,Certificate Bakery,Culinary Academy of India,PMKVY - Baker Training
+116,Event Management,Wedding Planning,BBA Event Management,Symbiosis Pune,NSDC - Event Management
+117,Event Management,Corporate Events,MBA Event Management,NAEMD Mumbai,PMKVY - Event Planning
+118,Tourism,Travel Management,B.Sc Tourism,IGNOU,NPTEL - Tourism Management
+119,Tourism,Tour Operations,Diploma Tourism,IHM Goa,NSDC - Travel & Tourism
+120,Aviation,Pilot Training,Commercial Pilot License,Indira Gandhi Rashtriya Uran Akademi,DGCA Approved Training
+121,Aviation,Cabin Crew,Diploma Aviation,Frankfinn Institute,PMKVY - Cabin Crew Training
+122,Agriculture,Crop Management,B.Sc Agriculture,Indian Agricultural Research Institute,NPTEL - Agriculture & Food Engineering
+123,Agriculture,Organic Farming,M.Sc Agriculture,Punjab Agricultural University,PMKVY - Agriculture Skills
+124,Horticulture,Plant Science,B.Sc Horticulture,Tamil Nadu Agricultural University,NSDC - Horticulture Training
+125,Horticulture,Landscape Design,M.Sc Horticulture,University of Agricultural Sciences,Government Agriculture Programs
+126,Veterinary Science,Animal Health,B.V.Sc,Indian Veterinary Research Institute,NPTEL - Veterinary Science
+127,Veterinary Science,Livestock Management,M.V.Sc,Madras Veterinary College,PMKVY - Animal Husbandry
+128,Fisheries,Aquaculture,B.F.Sc,Central Institute of Fisheries Education,NSDC - Fisheries Training
+129,Fisheries,Marine Biology,M.F.Sc,Kerala University of Fisheries,PMKVY - Aquaculture Training
+130,Forestry,Wildlife Conservation,B.Sc Forestry,Forest Research Institute,WWF Conservation Programs
+131,Forestry,Forest Management,M.Sc Forestry,Indian Institute of Forest Management,NPTEL - Environmental Studies
+132,Social Work,Community Development,BSW,Tata Institute of Social Sciences,NPTEL - Social Work
+133,Social Work,Child Welfare,MSW,Delhi School of Social Work,NSDC - Social Sector Skills
+134,Political Science,Public Policy,B.A Political Science,JNU Delhi,NPTEL - Political Science
+135,Political Science,International Relations,M.A Political Science,Delhi University,SWAYAM - Indian Polity
+136,Sociology,Social Research,B.A Sociology,Delhi School of Economics,NPTEL - Introduction to Sociology
+137,Sociology,Urban Sociology,M.A Sociology,JNU Delhi,SWAYAM - Sociological Perspectives
+138,History,Archaeological Studies,B.A History,Delhi University,NPTEL - Indian Heritage
+139,History,Museum Studies,M.A History,JNU Delhi,ASI Training Programs
+140,Philosophy,Ethics,B.A Philosophy,St. Stephens College,NPTEL - Philosophy
+141,Philosophy,Logic,M.A Philosophy,JNU Delhi,SWAYAM - Indian Philosophy
+142,Literature,English Literature,B.A English,Presidency College Chennai,NPTEL - Literature & Culture
+143,Literature,Comparative Literature,M.A English,Delhi University,SWAYAM - Literary Studies
+144,Linguistics,Applied Linguistics,B.A Linguistics,University of Delhi,NPTEL - Linguistics
+145,Linguistics,Translation Studies,M.A Linguistics,JNU Delhi,Government Translation Programs
+146,Mathematics,Pure Mathematics,B.Sc Mathematics,St. Stephens College,NPTEL - Mathematics
+147,Mathematics,Applied Mathematics,M.Sc Mathematics,IIT Delhi,SWAYAM - Advanced Mathematics
+148,Physics,Theoretical Physics,B.Sc Physics,IIT Bombay,NPTEL - Physics
+149,Physics,Astrophysics,M.Sc Physics,Indian Institute of Astrophysics,SWAYAM - Astronomy
+150,Chemistry,Organic Chemistry,B.Sc Chemistry,Hindu College Delhi,NPTEL - Chemistry
+151,Chemistry,Analytical Chemistry,M.Sc Chemistry,IIT Madras,SWAYAM - Chemical Sciences
+152,Biology,Molecular Biology,B.Sc Biology,St. Stephens College,NPTEL - Cell Biology
+153,Biology,Ecology,M.Sc Biology,JNU Delhi,SWAYAM - Environmental Biology
+154,Statistics,Data Analysis,B.Sc Statistics,Presidency College Kolkata,NPTEL - Probability & Statistics
+155,Statistics,Biostatistics,M.Sc Statistics,ISI Kolkata,SWAYAM - Statistical Methods
+156,Retail Management,Store Operations,BBA Retail,NRAI Certified Colleges,NSDC - Retail Training
+157,Retail Management,Visual Merchandising,MBA Retail,NIFT Delhi,PMKVY - Retail Sales Associate
+158,Supply Chain Management,Logistics,BBA Logistics,Symbiosis Pune,NPTEL - Supply Chain Management
+159,Supply Chain Management,Warehouse Management,MBA Logistics,IIM Calcutta,NSDC - Logistics Skills
+160,E-commerce,Online Business,BBA E-commerce,Christ University,PMKVY - E-commerce Operations
+161,E-commerce,Marketplace Management,MBA E-commerce,NMIMS Mumbai,Google Digital Garage
+162,Real Estate,Property Management,BBA Real Estate,RICS School of Built Environment,NSDC - Real Estate Skills
+163,Real Estate,Real Estate Development,MBA Real Estate,NICMAR Pune,PMKVY - Real Estate Training
+164,Cosmetology,Makeup Artistry,Diploma Cosmetology,Lakme Academy,NSDC - Beauty & Wellness
+165,Cosmetology,Hair Styling,Certificate Beauty,VLCC Institute,PMKVY - Beauty Therapist
+166,Spa Management,Wellness Therapy,Diploma Spa Management,ISWA Bangalore,NSDC - Spa Therapy Training
+167,Spa Management,Ayurveda Therapy,Certificate Ayurveda,Arya Vaidya Sala,Government Ayush Programs
+168,Fitness Training,Personal Training,Diploma Fitness,K11 School of Fitness,NSDC - Fitness Training
+169,Fitness Training,Yoga Instruction,Certificate Yoga,Patanjali Yogpeeth,PMKVY - Yoga Instructor
+170,Sports Science,Sports Nutrition,B.Sc Sports Science,Lakshmibai National Institute,NSDC - Sports Nutrition
+171,Sports Science,Sports Psychology,M.Sc Sports Science,Punjabi University,PMKVY - Sports Coach
+172,Carpentry,Wood Working,ITI Carpentry,Government ITI,PMKVY - Carpenter Training
+173,Carpentry,Furniture Making,Diploma Carpentry,NSDC Training Centers,NSDC - Carpentry Skills
+174,Plumbing,Pipe Fitting,ITI Plumbing,Government ITI,PMKVY - Plumber Training
+175,Plumbing,Sanitation Systems,Diploma Plumbing,NSDC Training Centers,NSDC - Plumbing Skills
+176,Electrical Work,House Wiring,ITI Electrician,Government ITI,PMKVY - Electrician Training
+177,Electrical Work,Industrial Wiring,Diploma Electrical,NSDC Training Centers,NSDC - Electrical Skills
+178,Welding,Arc Welding,ITI Welding,Government ITI,PMKVY - Welder Training
+179,Welding,Gas Welding,Diploma Welding,NSDC Training Centers,NSDC - Advanced Welding
+180,Masonry,Construction Work,ITI Masonry,Government ITI,PMKVY - Mason Training
+181,Masonry,Brick Laying,Certificate Masonry,NSDC Training Centers,NSDC - Construction Skills
+182,Painting,House Painting,ITI Painting,Government ITI,PMKVY - Painter Training
+183,Painting,Industrial Painting,Diploma Painting,NSDC Training Centers,NSDC - Painting Skills
+184,Tailoring,Garment Stitching,ITI Dress Making,Government ITI,PMKVY - Tailor Training
+185,Tailoring,Fashion Tailoring,Diploma Tailoring,NSDC Training Centers,NSDC - Apparel Skills
+186,Handicrafts,Traditional Crafts,Certificate Handicrafts,Handicrafts Board,PM Vishwakarma Scheme
+187,Handicrafts,Jewelry Making,Diploma Handicrafts,Jewelry Training Centers,NSDC - Gem & Jewelry
+188,Pottery,Ceramic Making,Certificate Pottery,Potters Cooperative,PM Vishwakarma Scheme
+189,Pottery,Clay Modeling,Diploma Pottery,National Institute of Design,Government Craft Programs
+190,Textile Design,Handloom Weaving,Diploma Textiles,National Institute of Fashion Technology,PM Vishwakarma Scheme
+191,Textile Design,Fabric Printing,Certificate Textiles,Weavers Service Centers,NSDC - Handloom Skills
+192,Leather Work,Leather Crafting,ITI Leather Goods Making,Government ITI,PMKVY - Leather Goods Maker
+193,Leather Work,Footwear Making,Diploma Leather Technology,FDDI Noida,NSDC - Footwear Skills
+194,Renewable Energy,Solar Installation,Diploma Solar Technology,MNRE Approved Institutes,PMKVY - Solar Technician
+195,Renewable Energy,Wind Energy,Certificate Renewable Energy,NIWE Chennai,NSDC - Renewable Energy Skills
+196,Waste Management,Recycling,Diploma Waste Management,IGEP Ahmedabad,PMKVY - Waste Picker Training
+197,Waste Management,Solid Waste,Certificate Waste Management,SAAHAS Bangalore,NSDC - Waste Management
+198,Water Management,Water Conservation,Diploma Water Management,CEPT Ahmedabad,Government Water Programs
+199,Water Management,Water Quality Testing,Certificate Water Testing,NEERI Nagpur,PMKVY - Water Quality Tester
+200,Urban Planning,City Development,M.Plan Urban Planning,SPA Delhi,NPTEL - Urban Planning
+201,Urban Planning,Smart Cities,PG Diploma Urban Planning,CEPT Ahmedabad,NSDC - Urban Planning Skills
+202,Rural Development,Community Planning,PGDM Rural Management,IRMA Anand,DDU-GKY Training
+203,Rural Development,Agricultural Extension,Diploma Rural Development,NIRD Hyderabad,PMKVY - Rural Development
+204,Public Health,Epidemiology,MPH,AIIMS Delhi,NPTEL - Public Health
+205,Public Health,Health Policy,M.Sc Public Health,TISS Mumbai,WHO Training Programs
+206,Nutrition,Clinical Nutrition,B.Sc Nutrition,Lady Irwin College,NSDC - Nutrition & Dietetics
+207,Nutrition,Sports Nutrition,M.Sc Nutrition,SNDT Mumbai,PMKVY - Dietitian Training
+208,Library Science,Information Management,B.Lib.Sc,Delhi University,NPTEL - Library Science
+209,Library Science,Digital Archives,M.Lib.Sc,University of Mumbai,SWAYAM - Information Science
+210,Museum Studies,Heritage Management,MA Museum Studies,National Museum Institute,ASI Heritage Conservation
+211,Museum Studies,Curation,PG Diploma Museum Studies,MS University Baroda,Government Heritage Programs
+212,Archaeology,Excavation,MA Archaeology,Deccan College Pune,ASI Archaeological Training
+213,Archaeology,Heritage Conservation,M.Sc Archaeology,Institute of Archaeology Delhi,Government Conservation Programs
+214,Geology,Mineral Exploration,B.Sc Geology,Presidency College Chennai,NPTEL - Earth Sciences
+215,Geology,Petroleum Geology,M.Sc Geology,IIT Roorkee,ONGC Training Programs
+216,Marine Science,Oceanography,B.Sc Marine Science,Cochin University of Science,NPTEL - Ocean Science
+217,Marine Science,Marine Conservation,M.Sc Marine Science,Goa University,INCOIS Training Programs
+218,Meteorology,Weather Forecasting,B.Sc Meteorology,Pune University,IMD Training Programs
+219,Meteorology,Climate Science,M.Sc Meteorology,IIT Delhi,NPTEL - Atmospheric Science
+220,Artificial Intelligence,Computer Vision,M.Tech Computer Vision,IIIT Bangalore,NPTEL - Computer Vision
+221,Artificial Intelligence,Natural Language Processing,M.Tech NLP,IIT Bombay,SWAYAM - AI & ML
+222,Data Science,Big Data Analytics,PG Diploma Big Data,IIIT Bangalore,PMKVY - Big Data Training
+223,Data Science,Business Intelligence,MBA Business Analytics,IIM Bangalore,NSDC - Data Analytics
+224,Cybersecurity,Information Security,M.Sc Cybersecurity,IIT Kanpur,NPTEL - Information Security
+225,Cybersecurity,Penetration Testing,PG Diploma Cybersecurity,CDAC Pune,NSDC - Ethical Hacking
+226,Ethical Hacking,Web Application Security,Certificate Ethical Hacking,EC-Council India,CEH Certification Training
+227,Ethical Hacking,Network Penetration,Advanced Diploma Cybersecurity,Indian Cyber Security Solutions,PMKVY - Cybersecurity Training
+228,Quantum Computing,Quantum Algorithms,M.Tech Quantum Computing,IISc Bangalore,NPTEL - Quantum Computing
+229,Quantum Computing,Quantum Cryptography,PhD Quantum Science,IIT Madras,SWAYAM - Quantum Mechanics
+230,Augmented Reality,AR Development,B.Tech AR/VR,VIT Vellore,Unity AR Foundation Course
+231,Augmented Reality,Mixed Reality,M.Tech AR/VR,IIIT Hyderabad,NSDC - AR/VR Development
+232,Virtual Reality,VR Game Development,B.Tech VR,Amity University,Unreal VR Development Course
+233,Virtual Reality,360 Video Production,Diploma VR,Arena Animation,PMKVY - VR Content Creation
+234,Nanotechnology,Nanomaterials,M.Tech Nanotechnology,IIT Bombay,NPTEL - Nanotechnology
+235,Nanotechnology,Nanoelectronics,PhD Nanotechnology,IISc Bangalore,SWAYAM - Nanoscience
+236,Renewable Energy,Biomass Energy,M.Tech Renewable Energy,Anna University,MNRE Biomass Training
+237,Renewable Energy,Hydropower,B.Tech Energy Engineering,NIT Hamirpur,NPTEL - Renewable Energy
+238,Electric Vehicles,EV Design,M.Tech Automobile,VIT Vellore,PMKVY - EV Technician
+239,Electric Vehicles,Battery Technology,M.Tech Energy Storage,IIT Madras,NSDC - EV Training
+240,Drones,UAV Operations,Diploma Drone Technology,Drone Destination,DGCA Remote Pilot License
+241,Drones,Aerial Photography,Certificate Drone Piloting,Indian Institute of Drones,NSDC - Drone Operator
+242,Space Technology,Satellite Engineering,M.Tech Aerospace,IIT Bombay,ISRO Training Programs
+243,Space Technology,Space Science,M.Sc Space Science,Physical Research Laboratory,NPTEL - Satellite Technology
+244,Materials Science,Advanced Materials,M.Tech Materials Science,IIT Kanpur,NPTEL - Materials Science
+245,Materials Science,Composite Materials,PhD Materials Engineering,IISc Bangalore,SWAYAM - Material Engineering
+246,Bioinformatics,Computational Biology,M.Sc Bioinformatics,JNU Delhi,NPTEL - Bioinformatics
+247,Bioinformatics,Genomics,M.Tech Bioinformatics,BITS Pilani,SWAYAM - Computational Biology
+248,Pharmaceutical Science,Drug Discovery,M.Pharm Pharmaceutics,NIPER Mohali,NPTEL - Pharmaceutical Sciences
+249,Pharmaceutical Science,Clinical Trials,PG Diploma Clinical Research,ACRF Delhi,NSDC - Clinical Research
+250,Medical Biotechnology,Stem Cell Research,M.Tech Medical Biotech,Manipal University,NPTEL - Medical Biotechnology
+251,Medical Biotechnology,Tissue Engineering,PhD Biotechnology,IIT Kharagpur,SWAYAM - Biomedical Engineering
+252,Neuroscience,Brain Research,M.Sc Neuroscience,NIMHANS Bangalore,NPTEL - Neuroscience
+253,Neuroscience,Cognitive Science,PhD Neuroscience,IISc Bangalore,SWAYAM - Cognitive Psychology
+254,Microbiology,Medical Microbiology,M.Sc Microbiology,Delhi University,NPTEL - Microbiology
+255,Microbiology,Industrial Microbiology,M.Tech Microbiology,Anna University,PMKVY - Laboratory Technician
+256,Zoology,Wildlife Biology,M.Sc Zoology,Delhi University,WWF Wildlife Training
+257,Zoology,Entomology,PhD Zoology,University of Agricultural Sciences,NPTEL - Animal Sciences
+258,Botany,Plant Pathology,M.Sc Botany,Presidency College Chennai,NPTEL - Plant Science
+259,Botany,Plant Breeding,PhD Botany,Indian Agricultural Research Institute,PMKVY - Agriculture Skills
+260,Food Technology,Food Processing,B.Tech Food Technology,NIFTEM Sonipat,NPTEL - Food Technology
+261,Food Technology,Quality Control,M.Tech Food Technology,CFTRI Mysore,PMKVY - Food Processing
+262,Dairy Technology,Milk Processing,B.Tech Dairy Technology,NDRI Karnal,NSDC - Dairy Farming
+263,Dairy Technology,Dairy Products,M.Tech Dairy Technology,Anand Agricultural University,PMKVY - Dairy Skills
+264,Sericulture,Silk Production,B.Sc Sericulture,University of Agricultural Sciences,NSDC - Sericulture Training
+265,Sericulture,Silkworm Rearing,Diploma Sericulture,Central Silk Board,PMKVY - Silk Farming
+266,Apiculture,Beekeeping,Certificate Beekeeping,Khadi Village Industries,PM Vishwakarma Scheme
+267,Apiculture,Honey Production,Diploma Apiculture,National Bee Board,NSDC - Beekeeping Training
+268,Poultry Science,Poultry Farming,B.Sc Poultry Science,Kerala Veterinary University,PMKVY - Poultry Farming
+269,Poultry Science,Hatchery Management,Diploma Poultry,CARI Bareilly,NSDC - Poultry Skills
+270,Actuarial Science,Risk Analysis,B.Sc Actuarial Science,Christ University,Institute of Actuaries of India
+271,Actuarial Science,Insurance Mathematics,M.Sc Actuarial Science,University of Mumbai,Actuarial Society of India
+272,Forensic Science,Crime Investigation,M.Sc Forensic Science,Gujarat Forensic Sciences University,NPTEL - Forensic Science
+273,Forensic Science,Digital Forensics,PG Diploma Cyber Forensics,LNJN NICFS Delhi,NSDC - Forensic Training
+274,Criminology,Criminal Psychology,M.A Criminology,TISS Mumbai,NPTEL - Criminology
+275,Criminology,Criminal Justice,LLM Criminal Law,NLSIU Bangalore,SWAYAM - Criminal Justice
+276,Fire Safety,Fire Engineering,Diploma Fire Safety,National Fire Service College,NSDC - Fire Safety Training
+277,Fire Safety,Industrial Safety,B.Tech Fire & Safety,Anna University,PMKVY - Safety Officer
+278,Disaster Management,Emergency Response,PG Diploma Disaster Management,NIDM Delhi,NPTEL - Disaster Management
+279,Disaster Management,Crisis Management,M.A Disaster Management,TISS Mumbai,NSDC - Disaster Response
+280,Industrial Safety,Occupational Health,B.Tech Industrial Safety,University of Petroleum,NPTEL - Safety Engineering
+281,Industrial Safety,HSE Management,M.Tech Safety Engineering,NIT Trichy,PMKVY - Safety Training
+282,Patent Law,IP Rights,LLM IP Law,NALSAR Hyderabad,NPTEL - Intellectual Property Rights
+283,Patent Law,Patent Drafting,PG Diploma Patent Law,IIT Kharagpur,SWAYAM - IP Management
+284,Environmental Law,Climate Policy,LLM Environmental Law,NLSIU Bangalore,NPTEL - Environmental Law
+285,Environmental Law,Pollution Control,PG Diploma Environmental Law,SLS Pune,SWAYAM - Environmental Regulations
+286,Labor Law,Industrial Relations,LLM Labor Law,Campus Law Centre Delhi,NPTEL - Labour Laws
+287,Labor Law,Employment Law,PG Diploma Labor Law,TISS Mumbai,SWAYAM - Industrial Relations
+288,Tax Law,Direct Taxation,LLM Tax Law,NALSAR Hyderabad,NPTEL - Taxation Laws
+289,Tax Law,GST Compliance,PG Diploma Tax Law,ICAI Regional Offices,SWAYAM - GST & Taxation
+290,Banking Law,Financial Regulations,LLM Banking Law,NLIU Bhopal,NPTEL - Banking Law
+291,Banking Law,Securities Law,PG Diploma Securities Law,NISM Mumbai,NISM Certifications
+292,Sports Management,Sports Marketing,MBA Sports Management,IIM Rohtak,NSDC - Sports Management
+293,Sports Management,Event Management,PG Diploma Sports Management,Symbiosis Pune,PMKVY - Sports Coaching
+294,Cricket Coaching,Batting Techniques,Diploma Cricket Coaching,National Cricket Academy,BCCI Coaching Certification
+295,Cricket Coaching,Bowling Techniques,Certificate Cricket Coaching,State Cricket Associations,NSDC - Sports Coach
+296,Football Coaching,Football Training,Diploma Football Coaching,Tata Football Academy,AIFF Coaching License
+297,Football Coaching,Goalkeeping,Certificate Football Coaching,Sports Authority of India,NSDC - Football Coach
+298,Badminton Coaching,Badminton Training,Diploma Badminton Coaching,Prakash Padukone Academy,BAI Coaching Certification
+299,Badminton Coaching,Advanced Techniques,Certificate Badminton Coaching,Pullela Gopichand Academy,NSDC - Badminton Coach
+300,Chess Training,Chess Coaching,Certificate Chess Coaching,All India Chess Federation,AICF Arbiter Course
+301,Chess Training,Chess Strategy,Diploma Chess Coaching,Chess Gurukul,NSDC - Chess Trainer
+302,Swimming Coaching,Swimming Training,Diploma Swimming Coaching,Swimming Federation of India,NSDC - Swimming Coach
+303,Swimming Coaching,Water Safety,Certificate Swimming Coaching,Sports Authority of India,Lifeguard Certification
+304,Martial Arts,Karate Training,Black Belt Karate,Karate Federation of India,NSDC - Martial Arts Instructor
+305,Martial Arts,Taekwondo,Black Belt Taekwondo,Taekwondo Federation India,PMKVY - Self Defense Trainer
+306,Dance,Classical Dance,Diploma Bharatanatyam,Kalakshetra Chennai,Sangeet Natak Akademi
+307,Dance,Contemporary Dance,Certificate Contemporary,Attakkalari Centre Bangalore,NSDC - Dance Training
+308,Music,Hindustani Classical,Diploma Music,ITC Sangeet Research Academy,Sangeet Natak Akademi
+309,Music,Carnatic Music,Certificate Music,Chennai Music Academy,Government Music Programs
+310,Theatre Arts,Acting,Diploma Acting,National School of Drama,NPTEL - Theatre Arts
+311,Theatre Arts,Direction,PG Diploma Theatre,FTII Pune,SWAYAM - Performing Arts
+312,Stand-up Comedy,Comedy Writing,Workshop Comedy,The Comedy Factory,Online Comedy Masterclass
+313,Stand-up Comedy,Performance,Certificate Comedy,Canvas Laugh Club,NSDC - Entertainment Skills
+314,Voice Acting,Dubbing,Certificate Voice Acting,Anjali Dubbing Studios,PMKVY - Voice Over Artist
+315,Voice Acting,Radio Jockey,Diploma RJ,Indian Institute of Mass Communication,NSDC - Radio Broadcasting
+316,Translation,Literary Translation,MA Translation Studies,Central Institute of Indian Languages,NPTEL - Translation Studies
+317,Translation,Technical Translation,PG Diploma Translation,JNU Delhi,SWAYAM - Language Studies
+318,Interpretation,Simultaneous Interpretation,Certificate Interpretation,CIIL Mysore,Government Translation Services
+319,Interpretation,Court Interpretation,Diploma Interpretation,High Court Training Programs,NSDC - Legal Interpretation
+320,Publishing,Editorial,MA Publishing,Symbiosis Pune,NPTEL - Publishing Studies
+321,Publishing,Book Design,PG Diploma Publishing,University of Mumbai,NSDC - Print Media
+322,Book Writing,Fiction Writing,Certificate Creative Writing,British Council India,Coursera - Creative Writing
+323,Book Writing,Non-Fiction,Workshop Writing,India Habitat Centre,SWAYAM - Writing Skills
+324,Screenwriting,Film Writing,Diploma Screenwriting,FTII Pune,NPTEL - Screenplay Writing
+325,Screenwriting,TV Series Writing,Certificate Screenwriting,Whistling Woods Mumbai,NSDC - Content Writing
+326,Copywriting,Advertising Copy,Certificate Copywriting,Mudra Institute of Communications,Google Digital Marketing
+327,Copywriting,Brand Messaging,Diploma Copywriting,MICA Ahmedabad,PMKVY - Content Creation
+328,Video Editing,Film Editing,Diploma Video Editing,FTII Pune,NPTEL - Video Production
+329,Video Editing,YouTube Content,Certificate Video Editing,Arena Animation,Adobe Premiere Pro Training
+330,Audio Engineering,Music Production,Diploma Audio Engineering,KM Music Conservatory,PMKVY - Audio Technician
+331,Audio Engineering,Live Sound,Certificate Audio Engineering,SAE Institute,NSDC - Sound Engineering
+332,Radio Production,Radio Programming,Diploma Radio,Indian Institute of Mass Communication,NPTEL - Radio Broadcasting
+333,Radio Production,Podcast Production,Certificate Podcasting,All India Radio Training,NSDC - Audio Production
+334,Television Production,TV Direction,PG Diploma TV Production,Symbiosis Pune,NPTEL - Television Studies
+335,Television Production,Studio Operations,Diploma TV Production,Asian Academy of Film,NSDC - TV Production
+336,Documentary Making,Documentary Direction,Certificate Documentary,Public Service Broadcasting Trust,NPTEL - Documentary Films
+337,Documentary Making,Social Documentary,Workshop Documentary,Films Division India,NSDC - Documentary Production
+338,Comic Book Art,Illustration,Diploma Comics,Arena Animation,NSDC - Illustration Skills
+339,Comic Book Art,Story Boarding,Certificate Comics,Toonz Animation Academy,PMKVY - Animation Art
+340,Tattoo Art,Tattoo Design,Certificate Tattoo Art,Indian Tattoo Institute,NSDC - Body Art
+341,Tattoo Art,Permanent Makeup,Diploma Tattoo Art,Government Recognized Centers,PMKVY - Beautician Training
+342,Calligraphy,Hand Lettering,Certificate Calligraphy,National Institute of Design,PM Vishwakarma Scheme
+343,Calligraphy,Arabic Calligraphy,Workshop Calligraphy,Jamia Hamdard,NSDC - Traditional Arts
+344,Astrology,Vedic Astrology,Diploma Astrology,Bharatiya Vidya Bhavan,SWAYAM - Indian Knowledge Systems
+345,Astrology,Predictive Astrology,Certificate Astrology,Indian Council of Astrological Sciences,Traditional Learning Programs
+346,Numerology,Numerology Consultation,Certificate Numerology,Institute of Vedic Astrology,Online Numerology Course
+347,Numerology,Name Analysis,Workshop Numerology,All India Federation of Astrologers,SWAYAM - Alternative Sciences
+348,Palmistry,Hand Reading,Certificate Palmistry,Institute of Palmistry,Traditional Knowledge Programs
+349,Palmistry,Career Prediction,Workshop Palmistry,Vedic Learning Centers,Alternative Career Guidance
+350,Alternative Medicine,Homeopathy,BHMS,National Institute of Homoeopathy,AYUSH Training Programs
+351,Alternative Medicine,Naturopathy,BNYS,SDM College of Naturopathy,Government Naturopathy Programs
+352,Ayurveda,Ayurvedic Medicine,BAMS,Banaras Hindu University,AYUSH Ayurveda Programs
+353,Ayurveda,Panchakarma,MD Ayurveda,Gujarat Ayurved University,Government Ayurveda Training
+354,Unani Medicine,Unani Practice,BUMS,Aligarh Muslim University,AYUSH Unani Programs
+355,Unani Medicine,Herbal Medicine,MD Unani,Hamdard University,Government Unani Training
+356,Siddha Medicine,Siddha Practice,BSMS,Government Siddha Medical College,AYUSH Siddha Programs
+357,Siddha Medicine,Traditional Medicine,MD Siddha,Tamil Nadu Dr MGR Medical University,Government Siddha Training
+358,Yoga Therapy,Therapeutic Yoga,B.Sc Yoga Therapy,Swami Vivekananda Yoga University,AYUSH Yoga Programs
+359,Yoga Therapy,Clinical Yoga,M.Sc Yoga Therapy,SVYASA Bangalore,Government Yoga Training
+360,Acupuncture,Traditional Acupuncture,Diploma Acupuncture,International Institute of Acupuncture,AYUSH Alternative Medicine
+361,Acupuncture,Pain Management,Certificate Acupuncture,All India Institute of Ayurveda,NSDC - Wellness Therapy
+362,Reflexology,Foot Reflexology,Certificate Reflexology,VLCC Institute,PMKVY - Wellness Therapist
+363,Reflexology,Pressure Point Therapy,Diploma Reflexology,Spa Training Institutes,NSDC - Spa Therapy
+364,Aromatherapy,Essential Oils,Certificate Aromatherapy,ISWA Bangalore,PMKVY - Aromatherapist
+365,Aromatherapy,Holistic Wellness,Diploma Aromatherapy,Nature's Nest Wellness,NSDC - Alternative Therapy
