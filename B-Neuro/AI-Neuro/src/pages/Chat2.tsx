@@ -1,22 +1,12 @@
 /**
  * Chat2.tsx — AI Career Discovery Agent
- * ══════════════════════════════════════
- * Fixed version: handles all n8n "Message a Model" response formats correctly.
- *
- * Your n8n workflow: Webhook → Message a Model → Respond to Webhook
- * Your .env:  VITE_N8N_WEBHOOK_URL=https://rubipreethi.app.n8n.cloud/webhook/neuropath-agent1
- *
- * THE FIX: The n8n "Message a Model" (AI Agent) node returns the AI reply
- * as a plain string inside { "output": "..." }. We now handle ALL possible
- * n8n response shapes and aggressively extract JSON from the AI text.
- *
- * ALSO: The n8n prompt field must be set to:   {{ $json.body.message }}
- * (see the n8n update instructions at the bottom of this file)
+ * Added: ForwardBtn for stage navigation (chat→cards→roadmap→email)
+ * ForwardBtn only shows when it's valid to proceed forward.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Brain, Send, ArrowLeft, ChevronRight,
+  Brain, Send, ArrowLeft, ArrowRight, ChevronRight,
   Mail, CheckCircle, Sparkles, Loader2,
 } from "lucide-react";
 
@@ -35,7 +25,6 @@ interface RoadmapStep {
 type AppPage    = "chat" | "cards" | "roadmap" | "email";
 type SkillLevel = "Complete Beginner" | "Some Experience" | "Intermediate" | "";
 
-// ── Identical props to original Chat2 → App.tsx unchanged ──
 interface Chat2Props {
   onComplete: (predictedPassion: string) => void;
   userName:   string;
@@ -55,9 +44,9 @@ const PRESETS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// N8N HELPER — FIXED to handle all response shapes
+// N8N HELPER
 // ─────────────────────────────────────────────────────────────────────────────
-async function callN8n(message: string): Promise<string> {
+async function callN8n(message: string, type = "career", email = ""): Promise<string> {
   const url = import.meta.env.VITE_N8N_WEBHOOK_URL as string | undefined;
   if (!url || url.includes("YOUR_WEBHOOK")) {
     throw new Error("Add VITE_N8N_WEBHOOK_URL to your .env and restart npm run dev");
@@ -65,8 +54,11 @@ async function callN8n(message: string): Promise<string> {
 
   const res = await fetch(url, {
     method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ message }),
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    },
+    body: JSON.stringify({ message, type, email }),
   });
 
   if (!res.ok) {
@@ -75,69 +67,54 @@ async function callN8n(message: string): Promise<string> {
   }
 
   const rawText = await res.text();
+  console.log("[n8n] raw response:", rawText.slice(0, 500));
 
-  // ── Try to parse as JSON ──────────────────────────────────────────────────
   try {
     const data = JSON.parse(rawText) as unknown;
-
-    // Helper to dig a string out of unknown
-    const str = (v: unknown): string | null =>
-      typeof v === "string" ? v : null;
-
-    // data could be an array (n8n sometimes wraps in array)
+    const str = (v: unknown): string | null => typeof v === "string" ? v : null;
     const obj = (Array.isArray(data) ? data[0] : data) as Record<string, unknown>;
 
-    // ── Try every known n8n "Message a Model" / AI Agent output shape ──
-    //
-    // Shape 1 (most common for n8n AI Agent):  { "output": "..." }
-    if (str(obj?.output))  return str(obj.output)!;
+    if (str(obj?.output))   return str(obj.output)!;
+    if (str(obj?.text))     return str(obj.text)!;
+    if (str(obj?.response)) return str(obj.response)!;
+    if (str(obj?.result))   return str(obj.result)!;
 
-    // Shape 2 (n8n Gemini/OpenAI node):  { "text": "..." }
-    if (str(obj?.text))    return str(obj.text)!;
-
-    // Shape 3 (n8n chat model):  { "message": { "content": "..." } }
     if (obj?.message && typeof obj.message === "object") {
       const m = obj.message as Record<string, unknown>;
       if (str(m?.content)) return str(m.content)!;
     }
 
-    // Shape 4 (Gemini raw):  { "content": { "parts": [{ "text": "..." }] } }
     if (obj?.content && typeof obj.content === "object") {
       const c = obj.content as Record<string, unknown>;
       if (Array.isArray(c?.parts) && c.parts.length > 0) {
         const p = (c.parts as Record<string, unknown>[])[0];
         if (str(p?.text)) return str(p.text)!;
       }
+      if (str(c)) return str(c)!;
     }
 
-    // Shape 5: { "response": "..." }
-    if (str(obj?.response)) return str(obj.response)!;
+    for (const key of Object.keys(obj || {})) {
+      if (str((obj as Record<string, unknown>)[key])) {
+        return str((obj as Record<string, unknown>)[key])!;
+      }
+    }
 
-    // Shape 6: { "result": "..." }
-    if (str(obj?.result)) return str(obj.result)!;
-
-    // Fallback: return raw JSON (will be tried as JSON by extractJSON)
     return rawText;
-
   } catch {
-    // n8n returned plain text directly
     return rawText;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// JSON EXTRACTOR — very aggressive, handles all LLM formatting habits
+// JSON EXTRACTOR
 // ─────────────────────────────────────────────────────────────────────────────
 function extractJSON<T>(aiText: string): T {
-  // 1. Strip markdown code fences
   let cleaned = aiText
     .replace(/```json\s*/gi, "")
     .replace(/```\s*/g, "")
     .trim();
 
-  // 2. Remove any leading/trailing explanation text before/after the JSON
-  //    Find the FIRST { or [ and the LAST } or ]
-  const firstBrace  = cleaned.indexOf("{");
+  const firstBrace   = cleaned.indexOf("{");
   const firstBracket = cleaned.indexOf("[");
   let start = -1;
 
@@ -151,7 +128,6 @@ function extractJSON<T>(aiText: string): T {
     start = Math.min(firstBrace, firstBracket);
   }
 
-  // Find matching end bracket
   const opener  = cleaned[start];
   const closer  = opener === "{" ? "}" : "]";
   const lastEnd = cleaned.lastIndexOf(closer);
@@ -163,7 +139,6 @@ function extractJSON<T>(aiText: string): T {
   try {
     return JSON.parse(jsonString) as T;
   } catch {
-    // Sometimes the LLM produces trailing commas — try a lenient fix
     const fixed = jsonString
       .replace(/,\s*}/g, "}")
       .replace(/,\s*]/g, "]");
@@ -172,7 +147,75 @@ function extractJSON<T>(aiText: string): T {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SMALL SHARED UI COMPONENTS (purple Tailwind theme)
+// EXTRACT ROADMAP STEPS
+// ─────────────────────────────────────────────────────────────────────────────
+function extractRoadmapSteps(raw: string): RoadmapStep[] {
+  console.log("[roadmap] extracting from:", raw.slice(0, 600));
+
+  try {
+    const data = extractJSON<{ steps: RoadmapStep[] }>(raw);
+    if (Array.isArray(data.steps) && data.steps.length > 0) return data.steps;
+  } catch { /* try next */ }
+
+  try {
+    const data = extractJSON<{ roadmap: RoadmapStep[] }>(raw);
+    if (Array.isArray(data.roadmap) && data.roadmap.length > 0) return data.roadmap;
+  } catch { /* try next */ }
+
+  try {
+    const data = extractJSON<RoadmapStep[]>(raw);
+    if (Array.isArray(data) && data.length > 0) return data;
+  } catch { /* try next */ }
+
+  try {
+    const data = extractJSON<{ data: { steps: RoadmapStep[] } }>(raw);
+    if (Array.isArray(data.data?.steps) && data.data.steps.length > 0) return data.data.steps;
+  } catch { /* try next */ }
+
+  throw new Error(`Could not parse roadmap steps. Raw: ${raw.slice(0, 200)}`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FALLBACK ROADMAP
+// ─────────────────────────────────────────────────────────────────────────────
+function getFallbackRoadmap(career: string, level: SkillLevel): RoadmapStep[] {
+  const isBeginner = level === "Complete Beginner";
+  return [
+    {
+      phase: "Foundation",
+      title: isBeginner ? `Learn ${career} Basics` : `Solidify ${career} Fundamentals`,
+      description: `Start with the core concepts of ${career}. Build a strong foundation that will support everything you learn later. Focus on understanding rather than memorizing.`,
+      resources: ["YouTube tutorials", "Coursera", "Udemy"],
+    },
+    {
+      phase: "Practice",
+      title: "Build Your First Projects",
+      description: `Apply what you've learned by working on small real projects in ${career}. Projects solidify your understanding and give you something to show employers or clients.`,
+      resources: ["GitHub", "Portfolio sites", "Personal projects"],
+    },
+    {
+      phase: "Growth",
+      title: "Find a Community & Mentor",
+      description: `Join communities of ${career} practitioners. Find a mentor who can guide you. Attend meetups, webinars, or workshops to network and learn from others.`,
+      resources: ["LinkedIn", "Reddit communities", "Discord servers", "Meetup.com"],
+    },
+    {
+      phase: "Specialization",
+      title: "Pick Your Niche",
+      description: `Within ${career}, identify the specific area you're most passionate about. Specializing makes you more valuable and helps you stand out in the job market.`,
+      resources: ["Industry blogs", "Podcasts", "Online courses"],
+    },
+    {
+      phase: "Professional",
+      title: "Launch Your Career",
+      description: `Start applying for jobs, internships, or freelance work in ${career}. Build your portfolio, update your resume, and start networking with professionals in the field.`,
+      resources: ["LinkedIn Jobs", "Indeed", "Upwork", "AngelList"],
+    },
+  ];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SMALL SHARED UI COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 function TypingDots() {
   return (
@@ -215,22 +258,102 @@ function BigCTA({ onClick, children, disabled = false }: {
   );
 }
 
-function BackBtn({ to }: { to: () => void }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// BACK + FORWARD NAVIGATION BAR
+// Both buttons sit in a flex row — back on left, forward on right.
+// ForwardBtn is hidden (invisible, non-interactive) when canGoForward=false,
+// so the layout stays stable and back button doesn't jump around.
+// ─────────────────────────────────────────────────────────────────────────────
+function NavBar({
+  onBack,
+  onForward,
+  canGoForward,
+  forwardLabel = "Next",
+}: {
+  onBack: () => void;
+  onForward?: () => void;
+  canGoForward?: boolean;
+  forwardLabel?: string;
+}) {
   return (
-    <button onClick={to}
-      className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors text-sm">
-      <ArrowLeft size={18} /> Back
-    </button>
+    <div className="flex items-center justify-between mb-6">
+      {/* Back */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-purple-300 hover:text-white transition-colors text-sm group"
+      >
+        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-purple-600/50 bg-purple-800/40 group-hover:bg-purple-700/60 transition-colors">
+          <ArrowLeft size={16} />
+        </span>
+        Back
+      </button>
+
+      {/* Forward — always rendered for layout stability, invisible when disabled */}
+      <button
+        onClick={onForward}
+        disabled={!canGoForward}
+        aria-hidden={!canGoForward}
+        className={`flex items-center gap-2 text-sm transition-all group ${
+          canGoForward
+            ? "text-purple-300 hover:text-white cursor-pointer opacity-100"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {forwardLabel}
+        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-purple-600/50 bg-purple-800/40 group-hover:bg-purple-700/60 transition-colors">
+          <ArrowRight size={16} />
+        </span>
+      </button>
+    </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CAREER CARD — hover blur effect
+// NORMALIZE CAREER CARD
 // ─────────────────────────────────────────────────────────────────────────────
-function CareerCardItem({ card, index, onClick }: {
-  card: CareerCard; index: number; onClick: () => void;
+function normalizeCard(raw: Record<string, unknown>): CareerCard {
+  const title =
+    (raw.title as string) ||
+    (raw.career_title as string) ||
+    (raw.name as string) ||
+    "Career";
+
+  const description =
+    (raw.description as string) ||
+    (raw.explanation as string) ||
+    (raw.summary as string) ||
+    "";
+
+  const perks: string[] = Array.isArray(raw.perks)
+    ? (raw.perks as string[])
+    : Array.isArray(raw.benefits)
+    ? (raw.benefits as string[])
+    : Array.isArray(raw.advantages)
+    ? (raw.advantages as string[])
+    : ["Great opportunities", "Good pay", "Growing field"];
+
+  const skills: string[] = Array.isArray(raw.skills)
+    ? (raw.skills as string[])
+    : Array.isArray(raw.required_skills)
+    ? (raw.required_skills as string[])
+    : Array.isArray(raw.competencies)
+    ? (raw.competencies as string[])
+    : ["Communication", "Problem solving", "Creativity"];
+
+  const emoji = (raw.emoji as string) || "🎯";
+
+  return { emoji, title, description, perks, skills };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CAREER CARD
+// ─────────────────────────────────────────────────────────────────────────────
+function CareerCardItem({ card: rawCard, index, onClick, selected }: {
+  card: CareerCard | Record<string, unknown>; index: number; onClick: () => void; selected?: boolean;
 }) {
+  const card = normalizeCard(rawCard as Record<string, unknown>);
   const [hov, setHov] = useState(false);
+  const active = hov || selected;
   return (
     <div
       onClick={onClick}
@@ -238,26 +361,25 @@ function CareerCardItem({ card, index, onClick }: {
       onMouseLeave={() => setHov(false)}
       className="relative overflow-hidden rounded-2xl border cursor-pointer transition-all duration-300"
       style={{
-        background:   hov ? "rgba(109,40,217,0.28)" : "rgba(88,28,135,0.18)",
-        borderColor:  hov ? "rgba(167,139,250,0.65)" : "rgba(109,40,217,0.4)",
-        transform:    hov ? "translateY(-8px)" : "translateY(0)",
-        boxShadow:    hov ? "0 24px 60px rgba(0,0,0,0.55)" : "none",
+        background:   active ? "rgba(109,40,217,0.28)" : "rgba(88,28,135,0.18)",
+        borderColor:  selected ? "rgba(167,139,250,0.9)" : active ? "rgba(167,139,250,0.65)" : "rgba(109,40,217,0.4)",
+        transform:    active ? "translateY(-8px)" : "translateY(0)",
+        boxShadow:    selected ? "0 0 0 2px rgba(167,139,250,0.4), 0 24px 60px rgba(0,0,0,0.55)" : active ? "0 24px 60px rgba(0,0,0,0.55)" : "none",
         animationDelay: `${index * 0.12}s`,
       }}
     >
-      {/* Blur overlay */}
       <div className="absolute inset-0 rounded-2xl flex items-center justify-center z-10 pointer-events-none transition-all duration-300"
         style={{
-          backdropFilter: hov ? "blur(3px)" : "blur(0px)",
-          background:     hov ? "rgba(10,0,30,0.28)" : "transparent",
+          backdropFilter: active ? "blur(3px)" : "blur(0px)",
+          background:     active ? "rgba(10,0,30,0.28)" : "transparent",
         }}>
         <span className="text-purple-300 text-sm px-5 py-2 rounded-full border border-purple-500/50 transition-all duration-300"
           style={{
             background: "rgba(10,0,30,0.82)",
-            opacity:    hov ? 1 : 0,
-            transform:  hov ? "translateY(0)" : "translateY(8px)",
+            opacity:    active ? 1 : 0,
+            transform:  active ? "translateY(0)" : "translateY(8px)",
           }}>
-          Choose this path →
+          {selected ? "✓ Selected" : "Choose this path →"}
         </span>
       </div>
 
@@ -351,6 +473,46 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   const [emailSent,    setEmailSent]    = useState(false);
   const [emailError,   setEmailError]   = useState("");
 
+  // ── PAGE PERSISTENCE via sessionStorage ──────────────────────────────────
+  useEffect(() => {
+    const savedPage = sessionStorage.getItem("neuropath_page") as AppPage | null;
+    if (savedPage) setPage(savedPage);
+
+    const savedInterest = sessionStorage.getItem("neuropath_interest");
+    if (savedInterest) {
+      setInterest(savedInterest);
+      setChatPhase("done");
+    }
+
+    const savedCard = sessionStorage.getItem("neuropath_card");
+    if (savedCard) {
+      try { setSelectedCard(JSON.parse(savedCard)); } catch { /* ignore */ }
+    }
+
+    const savedLevel = sessionStorage.getItem("neuropath_level") as SkillLevel | null;
+    if (savedLevel) setSkillLevel(savedLevel);
+
+    const savedSteps = sessionStorage.getItem("neuropath_steps");
+    if (savedSteps) {
+      try { setRoadmapSteps(JSON.parse(savedSteps)); } catch { /* ignore */ }
+    }
+
+    const savedCards = sessionStorage.getItem("neuropath_cards");
+    if (savedCards) {
+      try { setCards(JSON.parse(savedCards)); } catch { /* ignore */ }
+    }
+
+    setEmailSent(false);
+    setEmail("");
+  }, []);
+
+  useEffect(() => { sessionStorage.setItem("neuropath_page", page); }, [page]);
+  useEffect(() => { if (interest) sessionStorage.setItem("neuropath_interest", interest); }, [interest]);
+  useEffect(() => { if (selectedCard) sessionStorage.setItem("neuropath_card", JSON.stringify(selectedCard)); }, [selectedCard]);
+  useEffect(() => { if (skillLevel) sessionStorage.setItem("neuropath_level", skillLevel); }, [skillLevel]);
+  useEffect(() => { if (roadmapSteps.length > 0) sessionStorage.setItem("neuropath_steps", JSON.stringify(roadmapSteps)); }, [roadmapSteps]);
+  useEffect(() => { if (cards.length > 0) sessionStorage.setItem("neuropath_cards", JSON.stringify(cards)); }, [cards]);
+
   // Inject keyframes once
   useEffect(() => {
     const id = "c2-kf";
@@ -367,12 +529,10 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
     return () => { document.getElementById(id)?.remove(); };
   }, []);
 
-  // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, chatLoading]);
 
-  // Initial greeting (strict-mode safe)
   useEffect(() => {
     if (hasGreeted.current) return;
     hasGreeted.current = true;
@@ -386,7 +546,6 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
   const addBot  = (t: string) => setMessages((p) => [...p, { text: t, sender: "bot" }]);
   const addUser = (t: string) => setMessages((p) => [...p, { text: t, sender: "user" }]);
 
@@ -434,7 +593,6 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
     setCardsLoading(true);
     setCardsError("");
 
-    // We give the LLM a very clear JSON template to follow
     const prompt =
       `You are a career expert. Student interest: "${interest}". ` +
       `Respond with ONLY this exact JSON structure, nothing else before or after:\n` +
@@ -444,9 +602,16 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
 
     try {
       const raw  = await callN8n(prompt);
-      const data = extractJSON<{ careers: CareerCard[] }>(raw);
-      if (!data.careers || data.careers.length === 0) throw new Error("Empty careers array");
-      setCards(data.careers);
+      let rawCards: Record<string, unknown>[] = [];
+      try {
+        const data = extractJSON<{ careers?: unknown[]; paths?: unknown[]; data?: unknown[] }>(raw);
+        rawCards = (data.careers || data.paths || data.data || []) as Record<string, unknown>[];
+      } catch {
+        rawCards = extractJSON<Record<string, unknown>[]>(raw);
+      }
+      if (!rawCards || rawCards.length === 0) throw new Error("Empty careers array");
+      const normalized = rawCards.map(normalizeCard);
+      setCards(normalized);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
       setCardsError(`Could not load career paths: ${msg}. Please try again.`);
@@ -456,11 +621,13 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   }, [interest]);
 
   // ── PAGE 3: Generate roadmap ──────────────────────────────────────────────
-  const handleCardClick = (card: CareerCard) => {
-    setSelectedCard(card);
+  const handleCardClick = (card: CareerCard | Record<string, unknown>) => {
+    const normalized = normalizeCard(card as Record<string, unknown>);
+    setSelectedCard(normalized);
     setPage("roadmap");
     setSkillLevel("");
     setRoadmapSteps([]);
+    setRoadmapError("");
   };
 
   const generateRoadmap = useCallback(async (level: SkillLevel) => {
@@ -468,48 +635,119 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
     setSkillLevel(level);
     setRoadmapLoading(true);
     setRoadmapError("");
+    setRoadmapSteps([]);
 
     const prompt =
-      `You are a career mentor. Career: "${selectedCard.title}". Level: "${level}". ` +
-      `Respond with ONLY this exact JSON structure, nothing else:\n` +
-      `{"steps":[{"phase":"Foundation","title":"Step title","description":"2-3 sentences. Specific and actionable.","resources":["Platform 1","Tool 2"]}]}\n` +
-      `Fill in 5-6 progressive steps to become a professional ${selectedCard.title} starting from ${level}. ` +
-      `Use real platforms and tools. Do not include any explanation text outside the JSON.`;
+      `You are a career mentor. Respond with ONLY valid JSON, no other text.\n` +
+      `Create a learning roadmap for someone who wants to become a "${selectedCard.title}".\n` +
+      `Their current level: "${level}".\n` +
+      `Required JSON format (exactly this structure):\n` +
+      `{\n` +
+      `  "steps": [\n` +
+      `    {\n` +
+      `      "phase": "Foundation",\n` +
+      `      "title": "Learn the basics",\n` +
+      `      "description": "Start here. Two or three actionable sentences.",\n` +
+      `      "resources": ["YouTube", "Coursera"]\n` +
+      `    }\n` +
+      `  ]\n` +
+      `}\n` +
+      `Provide exactly 5 steps. Do not add any text before or after the JSON.`;
 
     try {
-      const raw  = await callN8n(prompt);
-      const data = extractJSON<{ steps: RoadmapStep[] }>(raw);
-      if (!data.steps || data.steps.length === 0) throw new Error("Empty steps array");
-      setRoadmapSteps(data.steps);
+      const raw = await callN8n(prompt);
+      let steps: RoadmapStep[] = [];
+
+      try {
+        steps = extractRoadmapSteps(raw);
+      } catch (parseErr) {
+        console.warn("[roadmap] Parse failed, trying retry prompt:", parseErr);
+        const retryPrompt =
+          `Return ONLY a JSON array of 5 career steps for "${selectedCard.title}" (${level} level).\n` +
+          `Format: [{"phase":"string","title":"string","description":"string","resources":["string"]}]\n` +
+          `No explanation. Only the JSON array.`;
+        const raw2 = await callN8n(retryPrompt);
+        steps = extractRoadmapSteps(raw2);
+      }
+
+      if (!steps || steps.length === 0) {
+        steps = getFallbackRoadmap(selectedCard.title, level);
+      }
+
+      const normalized = steps.map((s, i) => ({
+        phase:       s.phase       || `Phase ${i + 1}`,
+        title:       s.title       || `Step ${i + 1}`,
+        description: s.description || "Work on this step to advance your career.",
+        resources:   Array.isArray(s.resources) ? s.resources : [],
+      }));
+
+      setRoadmapSteps(normalized);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Unknown error";
-      setRoadmapError(`Could not generate roadmap: ${msg}`);
+      console.error("[roadmap] All attempts failed:", e);
+      const fallback = getFallbackRoadmap(selectedCard.title, level);
+      setRoadmapSteps(fallback);
     } finally {
       setRoadmapLoading(false);
     }
   }, [selectedCard]);
 
-  // ── PAGE 4: Send email via n8n ────────────────────────────────────────────
+  // ── PAGE 4: Send email ────────────────────────────────────────────────────
   const sendEmail = async () => {
     if (!email.trim()) return;
     setEmailSending(true);
     setEmailError("");
+    setEmailSent(false);
 
     const prompt =
       `Student ${userName} (email: ${email}) chose "${selectedCard?.title}" career path. ` +
       `Level: ${skillLevel}. Interest: ${interest}. ` +
-      `Steps: ${roadmapSteps.map((s, i) => `${i+1}. ${s.title}`).join(", ")}. ` +
+      `Steps: ${roadmapSteps.map((s, i) => `${i + 1}. ${s.title}`).join(", ")}. ` +
       `Write a short encouraging 2-paragraph email confirming their career roadmap. Plain text only.`;
 
     try {
-      await callN8n(prompt);
+      const result = await callN8n(prompt, "send_email", email);
+      console.log("[email] n8n response:", result);
       setEmailSent(true);
-    } catch {
+    } catch (e) {
+      console.error("[email] failed:", e);
       setEmailError("Could not send email right now. You can still continue!");
     } finally {
       setEmailSending(false);
     }
   };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // FORWARD NAVIGATION LOGIC
+  // Each stage defines whether forward is allowed and what it does.
+  // ─────────────────────────────────────────────────────────────────────────
+  const forwardConfig: Record<AppPage, { label: string; canGo: boolean; action: () => void }> = {
+    chat: {
+      label: "Career Paths",
+      // Can go forward only if interest chosen and not still loading bot reply
+      canGo: chatPhase === "done" && !chatLoading && interest.length > 0,
+      action: goToCards,
+    },
+    cards: {
+      label: "Roadmap",
+      // Can go forward only if a card has been selected
+      canGo: selectedCard !== null,
+      action: () => setPage("roadmap"),
+    },
+    roadmap: {
+      label: "Get Email",
+      // Can go forward only if roadmap is fully generated
+      canGo: roadmapSteps.length > 0 && !roadmapLoading,
+      action: () => setPage("email"),
+    },
+    email: {
+      label: "Continue",
+      // Always can proceed from email page
+      canGo: true,
+      action: () => onComplete(interest),
+    },
+  };
+
+  const fwd = forwardConfig[page];
 
   // ══════════════════════════════════════════════════════════════════════════
   // PAGE 1 — CHAT
@@ -517,7 +755,12 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   if (page === "chat") return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full">
-        {onBack && <BackBtn to={onBack} />}
+        <NavBar
+          onBack={onBack ?? (() => {})}
+          onForward={fwd.action}
+          canGoForward={fwd.canGo}
+          forwardLabel={fwd.label}
+        />
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
@@ -530,14 +773,12 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
         </div>
 
         <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl overflow-hidden">
-          {/* Chat header */}
           <div className="bg-purple-800/50 border-b border-purple-700/50 px-6 py-4 flex items-center gap-3">
             <Sparkles size={22} className="text-purple-300" />
             <h2 className="text-lg font-semibold text-white">Neuropath Career AI</h2>
             <span className="ml-auto text-xs text-green-400 bg-green-900/30 border border-green-700/30 px-3 py-1 rounded-full">● Online</span>
           </div>
 
-          {/* Messages */}
           <div className="h-[360px] overflow-y-auto p-6 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
@@ -559,7 +800,6 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Interest picker */}
           {chatPhase === "interest" && (
             <div className="border-t border-purple-700/50 p-6">
               <p className="text-purple-400 text-xs tracking-widest uppercase mb-3">Quick pick your interest</p>
@@ -604,7 +844,12 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   if (page === "cards") return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 px-6 py-12">
       <div className="max-w-5xl mx-auto">
-        <BackBtn to={() => setPage("chat")} />
+        <NavBar
+          onBack={() => setPage("chat")}
+          onForward={fwd.action}
+          canGoForward={fwd.canGo}
+          forwardLabel={fwd.label}
+        />
 
         <div className="text-center mb-10">
           <div className="inline-block bg-purple-800/40 border border-purple-600/40 text-purple-300 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase mb-4">{interest}</div>
@@ -625,9 +870,22 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
         {!cardsLoading && !cardsError && cards.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {cards.map((card, i) => (
-              <CareerCardItem key={i} card={card} index={i} onClick={() => handleCardClick(card)} />
+              <CareerCardItem
+                key={i}
+                card={card}
+                index={i}
+                selected={selectedCard?.title === card.title}
+                onClick={() => handleCardClick(card)}
+              />
             ))}
           </div>
+        )}
+
+        {/* Hint when a card is selected */}
+        {selectedCard && !cardsLoading && (
+          <p className="text-center text-purple-400 text-sm mt-6" style={{ animation: "c2FadeUp 0.4s ease" }}>
+            ✓ <span className="text-purple-200">{selectedCard.title}</span> selected — hit <span className="text-purple-200">Roadmap →</span> above to continue
+          </p>
         )}
       </div>
     </div>
@@ -639,7 +897,12 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   if (page === "roadmap") return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 px-6 py-12">
       <div className="max-w-4xl mx-auto">
-        <BackBtn to={() => setPage("cards")} />
+        <NavBar
+          onBack={() => setPage("cards")}
+          onForward={fwd.action}
+          canGoForward={fwd.canGo}
+          forwardLabel={fwd.label}
+        />
 
         <div className="text-center mb-10">
           <div className="inline-block bg-purple-800/40 border border-purple-600/40 text-purple-300 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase mb-4">Your Personalized Roadmap</div>
@@ -647,7 +910,6 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">{selectedCard?.emoji} {interest} → {selectedCard?.title} — 0 to Pro</p>
         </div>
 
-        {/* Skill level */}
         {!skillLevel && (
           <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8 max-w-xl mx-auto mb-10 text-center" style={{ animation: "c2FadeUp 0.5s ease" }}>
             <p className="text-white text-xl font-semibold mb-6 leading-relaxed">
@@ -672,7 +934,9 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
           </div>
         )}
 
-        {roadmapError && !roadmapLoading && <ErrorBox msg={roadmapError} />}
+        {roadmapError && !roadmapLoading && (
+          <ErrorBox msg={roadmapError} onRetry={() => skillLevel && generateRoadmap(skillLevel)} />
+        )}
 
         {!roadmapLoading && !roadmapError && roadmapSteps.length > 0 && (
           <div className="max-w-2xl mx-auto">
@@ -691,12 +955,17 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   );
 
   // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 4 — EMAIL + FINAL CTA → ChatbotAnalysis
+  // PAGE 4 — EMAIL
   // ══════════════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-3xl w-full">
-        <BackBtn to={() => setPage("roadmap")} />
+        <NavBar
+          onBack={() => setPage("roadmap")}
+          onForward={fwd.action}
+          canGoForward={fwd.canGo}
+          forwardLabel={fwd.label}
+        />
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
@@ -707,7 +976,6 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">We'll send your full personalized roadmap to your email</p>
         </div>
 
-        {/* Summary */}
         <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-6 mb-8 max-w-lg mx-auto">
           <p className="text-purple-400 text-xs tracking-widest uppercase mb-4">✦ Your Email Will Include</p>
           {[`Your Interest: ${interest}`, `Chosen Career: ${selectedCard?.title}`, `Your Level: ${skillLevel}`,
@@ -744,10 +1012,13 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
             </div>
             <h3 className="text-white text-2xl font-bold mb-2">Sent! ✨</h3>
             <p className="text-purple-300 text-sm">Check <strong className="text-purple-200">{email}</strong></p>
+            <button onClick={() => { setEmailSent(false); setEmail(""); setEmailError(""); }}
+              className="mt-4 text-purple-400 hover:text-purple-200 text-xs underline transition-colors">
+              Send to a different email
+            </button>
           </div>
         )}
 
-        {/* ── FINAL CTA → triggers onComplete → App.tsx goes to chatbot-analysis ── */}
         <div className="text-center">
           <BigCTA onClick={() => onComplete(interest)}>
             <Brain size={24} />
@@ -765,29 +1036,3 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
 }
 
 export default Chat2;
-
-/*
-══════════════════════════════════════════════════════════════════════════════
-  HOW TO FIX YOUR N8N "MESSAGE A MODEL" NODE  (required — do this once)
-══════════════════════════════════════════════════════════════════════════════
-
-1. Open your n8n workflow at: https://rubipreethi.app.n8n.cloud
-2. Click on the "Message a Model" node
-3. Find the field called "Prompt" or "User Message" or "Message"
-4. Change its value to:
-      {{ $json.body.message }}
-   This makes n8n pass whatever your React app sends as the AI input.
-
-5. In the SYSTEM PROMPT field (if it exists), put:
-      You are a helpful AI career guide for students. When asked for JSON,
-      respond with ONLY valid JSON matching the exact structure requested.
-      Never add explanation text before or after JSON responses.
-
-6. Click Save → make sure the workflow ACTIVE toggle is ON (top right)
-
-Your .env is CORRECT as it is:
-   VITE_N8N_WEBHOOK_URL=https://rubipreethi.app.n8n.cloud/webhook/neuropath-agent1
-   (No spaces, no quotes, just the URL)
-
-══════════════════════════════════════════════════════════════════════════════
-*/

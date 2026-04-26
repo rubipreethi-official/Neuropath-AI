@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LandingPage } from "./pages/LandingPage";
 import { SkillPassionQuestion } from "./pages/SkillPassionQuestion";
@@ -9,150 +10,185 @@ import { SkillDevelopmentPrograms } from "./pages/SkillDevelopmentPrograms";
 import { CoursesAndScholarships } from "./pages/CoursesAndScholarships";
 import { CareerReport } from "./pages/CareerReport";
 
-type Page =
-  | "landing"
-  | "skill-passion-question"
-  | "chat2"
-  | "chatbot-analysis"
-  | "relevant-skill-question"
-  | "skill-development"
-  | "courses-scholarships"
-  | "career-report";
+// ---------------------------------------------------------------------------
+// Helpers — passion is stored in sessionStorage so it survives navigation
+// ---------------------------------------------------------------------------
+const PASSION_KEY = "neuropath_user_passion";
 
-function AppContent() {
-  const [currentPage, setCurrentPage] = useState<Page>("landing");
-  const [userPassion, setUserPassion] = useState<string>("");
-  const { userName, user } = useAuth();
+function getPassion() {
+  return sessionStorage.getItem(PASSION_KEY) ?? "";
+}
+function setPassion(value: string) {
+  sessionStorage.setItem(PASSION_KEY, value);
+}
+function clearPassion() {
+  sessionStorage.removeItem(PASSION_KEY);
+}
+
+// ---------------------------------------------------------------------------
+// Auth guard — redirects to "/" if user is not logged in.
+// Pages listed in PUBLIC_PATHS are accessible without auth.
+// ---------------------------------------------------------------------------
+const PUBLIC_PATHS = ["/", "/chatbot-analysis"];
+
+function RequireAuth({ children }: { children: JSX.Element }) {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user && !PUBLIC_PATHS.includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+// ---------------------------------------------------------------------------
+// All page components wired with useNavigate
+// ---------------------------------------------------------------------------
+function AppRoutes() {
+  const navigate = useNavigate();
+  const { userName } = useAuth();
 
   const handleSkillPassionAnswer = (knowsSkill: boolean) => {
-    if (knowsSkill) {
-      setCurrentPage("relevant-skill-question");
-    } else {
-      setCurrentPage("chat2");
-    }
-  };
-
-  const goBack = () => {
-    const pageOrder: Page[] = [
-      "landing",
-      "skill-passion-question",
-      "chat2",
-      "chatbot-analysis",
-      "relevant-skill-question",
-      "skill-development",
-      "courses-scholarships",
-      "career-report",
-    ];
-
-    const currentIndex = pageOrder.indexOf(currentPage);
-    if (currentIndex > 0) {
-      setCurrentPage(pageOrder[currentIndex - 1]);
-    }
+    navigate(knowsSkill ? "/relevant-skill-question" : "/chat2");
   };
 
   const handleChat2Complete = (predictedPassion: string) => {
-    setUserPassion(predictedPassion);
-    setCurrentPage("chatbot-analysis");
+    setPassion(predictedPassion);
+    navigate("/chatbot-analysis");
   };
 
   const handleChatbotComplete = () => {
-    setCurrentPage("relevant-skill-question");
+    navigate("/relevant-skill-question");
   };
 
   const handleRelevantSkillAnswer = (hasRelevantSkill: boolean) => {
-    if (hasRelevantSkill) {
-      setCurrentPage("courses-scholarships");
-    } else {
-      setCurrentPage("skill-development");
-    }
+    navigate(hasRelevantSkill ? "/courses-scholarships" : "/skill-development");
   };
 
   const handleSkillDevelopmentContinue = () => {
-    setCurrentPage("courses-scholarships");
+    navigate("/courses-scholarships");
   };
 
   const handleCoursesAndScholarshipsContinue = () => {
-    setCurrentPage("career-report");
+    navigate("/career-report");
   };
 
   const handleRestart = () => {
-    setUserPassion("");
-    setCurrentPage("landing");
+    clearPassion();
+    navigate("/");
   };
 
-  // Redirect to landing if not authenticated
-  useEffect(() => {
-    if (!user && currentPage !== "landing") {
-      setCurrentPage("landing");
-    }
-  }, [user, currentPage]);
-
   return (
-    <>
-      {currentPage === "landing" && (
-        <LandingPage
-          onStart={() => setCurrentPage("skill-passion-question")}
-        />
-      )}
+    <Routes>
+      {/* Public */}
+      <Route
+        path="/"
+        element={
+          <LandingPage
+            onStart={() => navigate("/skill-passion-question")}
+            onChatBot={() => navigate("/chatbot-analysis")}
+          />
+        }
+      />
 
-      {currentPage === "skill-passion-question" && (
-        <SkillPassionQuestion
-          onAnswer={handleSkillPassionAnswer}
-          onBack={goBack}
-        />
-      )}
+      <Route
+        path="/chatbot-analysis"
+        element={
+          <ChatbotAnalysis
+            onComplete={handleChatbotComplete}
+            onBack={() => navigate("/")}
+          />
+        }
+      />
 
-      {currentPage === "chat2" && (
-        <Chat2
-          onComplete={handleChat2Complete}
-          userName={userName || "User"}
-          onBack={goBack}
-        />
-      )}
+      {/* Auth-protected */}
+      <Route
+        path="/skill-passion-question"
+        element={
+          <RequireAuth>
+            <SkillPassionQuestion
+              onAnswer={handleSkillPassionAnswer}
+              onBack={() => navigate(-1)}
+            />
+          </RequireAuth>
+        }
+      />
 
-      {currentPage === "chatbot-analysis" && (
-        <ChatbotAnalysis
-          onComplete={handleChatbotComplete}
-          onBack={goBack}
-        />
-      )}
+      <Route
+        path="/chat2"
+        element={
+          <RequireAuth>
+            <Chat2
+              onComplete={handleChat2Complete}
+              userName={userName || "User"}
+              onBack={() => navigate(-1)}
+            />
+          </RequireAuth>
+        }
+      />
 
-      {currentPage === "relevant-skill-question" && (
-        <RelevantSkillQuestion
-          onAnswer={handleRelevantSkillAnswer}
-          onBack={goBack}
-        />
-      )}
+      <Route
+        path="/relevant-skill-question"
+        element={
+          <RequireAuth>
+            <RelevantSkillQuestion
+              onAnswer={handleRelevantSkillAnswer}
+              onBack={() => navigate(-1)}
+            />
+          </RequireAuth>
+        }
+      />
 
-      {currentPage === "skill-development" && (
-        <SkillDevelopmentPrograms
-          onContinue={handleSkillDevelopmentContinue}
-          onBack={goBack}
-        />
-      )}
+      <Route
+        path="/skill-development"
+        element={
+          <RequireAuth>
+            <SkillDevelopmentPrograms
+              onContinue={handleSkillDevelopmentContinue}
+              onBack={() => navigate(-1)}
+            />
+          </RequireAuth>
+        }
+      />
 
-      {currentPage === "courses-scholarships" && (
-        <CoursesAndScholarships
-          onContinue={handleCoursesAndScholarshipsContinue}
-          onBack={goBack}
-        />
-      )}
+      <Route
+        path="/courses-scholarships"
+        element={
+          <RequireAuth>
+            <CoursesAndScholarships
+              onContinue={handleCoursesAndScholarshipsContinue}
+              onBack={() => navigate(-1)}
+            />
+          </RequireAuth>
+        }
+      />
 
-      {currentPage === "career-report" && (
-        <CareerReport
-          onRestart={handleRestart}
-          passion={userPassion}
-          userName={userName || "User"}
-        />
-      )}
-    </>
+      <Route
+        path="/career-report"
+        element={
+          <RequireAuth>
+            <CareerReport
+              onRestart={handleRestart}
+              passion={getPassion()}
+              userName={userName || "User"}
+            />
+          </RequireAuth>
+        }
+      />
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Root
+// ---------------------------------------------------------------------------
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <AppRoutes />
     </AuthProvider>
   );
 }

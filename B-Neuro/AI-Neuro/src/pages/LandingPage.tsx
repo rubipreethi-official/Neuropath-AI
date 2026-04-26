@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { LogIn, UserPlus, ArrowRight } from 'lucide-react';
+import { LogIn, UserPlus, ArrowRight, MessageCircle } from 'lucide-react';
 import { AuthModal } from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 import AIvideo from "./AI-NPvideo.mp4";
+
 interface LandingPageProps {
   onStart: () => void;
+  onChatBot: () => void;
 }
 
-export function LandingPage({ onStart }: LandingPageProps) {
+export function LandingPage({ onStart, onChatBot }: LandingPageProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const { user, userName } = useAuth();
@@ -19,11 +21,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
   const handleStartJourney = () => {
     if (!user) {
-      // User not authenticated, open signup modal
       openAuth('signup');
       return;
     }
-    // User is authenticated, proceed
     onStart();
   };
 
@@ -78,19 +78,20 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
 
           <div className="relative w-full max-w-4xl mx-auto mb-12 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/50 border-4 border-purple-700/50">
-           <video
-    src={AIvideo}
-    controls
-    autoPlay
-    loop
-    muted
-    className="w-full h-auto rounded-3xl"
-  >
-    Your browser does not support the video tag.
-  </video>
+            <video
+              src={AIvideo}
+              controls
+              autoPlay
+              loop
+              muted
+              className="w-full h-auto rounded-3xl"
+            >
+              Your browser does not support the video tag.
+            </video>
           </div>
 
-          <div className="text-center">
+          {/* Main CTA + Chat with Bot side by side */}
+          <div className="text-center flex flex-col items-center gap-4">
             <button
               onClick={handleStartJourney}
               className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
@@ -98,11 +99,21 @@ export function LandingPage({ onStart }: LandingPageProps) {
               {user ? 'Start Your Journey' : 'Sign Up to Start'}
               <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
             </button>
+
             {!user && (
-              <p className="text-purple-300 text-sm mt-4">
+              <p className="text-purple-300 text-sm">
                 Please sign up or sign in to begin your career guidance journey
               </p>
             )}
+
+            {/* Chat with Bot shortcut */}
+            <button
+              onClick={onChatBot}
+              className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-800/40 hover:bg-purple-700/50 border border-purple-600/50 hover:border-purple-400 text-purple-300 hover:text-white text-sm font-medium transition-all"
+            >
+              <MessageCircle size={16} className="group-hover:scale-110 transition-transform" />
+              Chat with Bot right away
+            </button>
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">

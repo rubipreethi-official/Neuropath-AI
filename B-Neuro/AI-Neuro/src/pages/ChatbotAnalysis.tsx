@@ -1,33 +1,19 @@
-import { useState } from 'react';
-import { MessageCircle, CheckCircle, ArrowLeft } from 'lucide-react';
- 
+import { MessageCircle, CheckCircle } from 'lucide-react';
+import { BackButton } from './Backbutton';
+
 interface ChatbotAnalysisProps {
   onComplete: () => void;
   onBack?: () => void;
 }
 
 export function ChatbotAnalysis({ onComplete, onBack }: ChatbotAnalysisProps) {
-  const [messages, setMessages] = useState<
-    Array<{ role: 'bot' | 'user'; text: string }>
-  >([
-    {
-      role: 'bot',
-      text: "Hello! I'm here to help you discover your skills and passions. Let's start with a few questions to understand you better."
-    }
-  ]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="mb-6 flex items-center gap-2 text-purple-300 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={20} />
-            Back
-          </button>
-        )}
+
+        {/* ✅ Back button — always visible at top of page if onBack is provided */}
+        {onBack && <BackButton onBack={onBack} />}
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
@@ -52,38 +38,17 @@ export function ChatbotAnalysis({ onComplete, onBack }: ChatbotAnalysisProps) {
           </div>
 
           <div className="h-[500px] overflow-y-auto p-6 space-y-4">
-            {/* Existing messages */}
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-6 py-4 ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white'
-                      : 'bg-purple-800/50 text-purple-100 border border-purple-700/50'
-                  }`}
-                >
-                  {message.text}
-                </div>
-              </div>
-            ))}
-
-            {/* Bot Image + Chatbase iframe */}
             <div className="bg-purple-800/30 border border-purple-700/50 rounded-xl p-6 text-center space-y-6">
               {/* Bot Picture */}
               <div className="flex justify-center">
                 <img
-                  src='../../assets/NeuroPath_Robot_Optimized.png' 
+                  src="../../assets/NeuroPath_Robot_Optimized.png"
                   alt="Career Bot"
                   className="w-32 h-32 rounded-full border-4 border-purple-600/50 object-cover"
                 />
               </div>
 
-              {/* Chatbase Chatbot Embed */}
+              {/* Chatbase iframe */}
               <div className="rounded-xl overflow-hidden border border-purple-700/50 bg-purple-800/30">
                 <iframe
                   src="https://www.chatbase.co/chatbot-iframe/jiaVrX6-wd8oYDtP0SuZm"
