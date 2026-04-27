@@ -1,17 +1,48 @@
-import { MessageCircle, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { MessageCircle, CheckCircle, Send, Sparkles } from 'lucide-react';
 import { BackButton } from './Backbutton';
 
 interface ChatbotAnalysisProps {
-  onComplete: () => void;
+  onComplete: (passion: string) => void;
   onBack?: () => void;
 }
 
+const QUICK_PICKS = [
+  'Technology & Software',
+  'Data Science & AI',
+  'Business & Entrepreneurship',
+  'Arts & Design',
+  'Healthcare & Medicine',
+  'Agriculture & Environment',
+  'Education & Teaching',
+  'Finance & Economics',
+  'Engineering',
+  'Media & Communication',
+];
+
 export function ChatbotAnalysis({ onComplete, onBack }: ChatbotAnalysisProps) {
+  const [showFinalPassion, setShowFinalPassion] = useState(false);
+  const [finalPassion, setFinalPassion] = useState('');
+
+  const handleDoneClick = () => {
+    setShowFinalPassion(true);
+  };
+
+  const handleChipClick = (chip: string) => {
+    setFinalPassion(chip);
+  };
+
+  const handleSubmit = () => {
+    const trimmed = finalPassion.trim();
+    if (!trimmed) return;
+    onComplete(trimmed);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-5xl w-full">
 
-        {/* ✅ Back button — always visible at top of page if onBack is provided */}
+        {/* Back button */}
         {onBack && <BackButton onBack={onBack} />}
 
         {/* Header */}
@@ -67,16 +98,74 @@ export function ChatbotAnalysis({ onComplete, onBack }: ChatbotAnalysisProps) {
 
         {/* Completion Button */}
         <div className="mt-8 text-center">
-          <button
-            onClick={onComplete}
-            className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
-          >
-            <CheckCircle size={24} />
-            I'm Done Analyzing
-          </button>
-          <p className="text-purple-300 text-sm mt-4">
-            Click when you've completed the conversation with the chatbot
-          </p>
+          {!showFinalPassion && (
+            <>
+              <button
+                onClick={handleDoneClick}
+                className="group inline-flex items-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
+              >
+                <CheckCircle size={24} />
+                I'm Done Analyzing
+              </button>
+              <p className="text-purple-300 text-sm mt-4">
+                Click when you've completed the conversation with the chatbot
+              </p>
+            </>
+          )}
+
+          {/* Inline Final-Passion capture */}
+          {showFinalPassion && (
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-500/50 rounded-2xl p-8 mt-4 text-left">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle size={22} className="text-green-400" />
+                <span className="text-green-300 font-semibold">Great — analysis complete!</span>
+              </div>
+              <div className="flex items-center gap-2 mb-5">
+                <Sparkles size={20} className="text-purple-400" />
+                <h3 className="text-xl font-bold text-white">Identified your final passion?</h3>
+              </div>
+              <p className="text-purple-300 text-sm mb-5">
+                Based on your chat with Neuro, what field excites you the most? Pick a quick option or type your own.
+              </p>
+
+              {/* Quick-pick chips */}
+              <div className="flex flex-wrap gap-2 mb-5">
+                {QUICK_PICKS.map((chip) => (
+                  <button
+                    key={chip}
+                    onClick={() => handleChipClick(chip)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                      finalPassion === chip
+                        ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-500/30'
+                        : 'bg-purple-800/40 text-purple-200 border-purple-700/50 hover:bg-purple-700/50 hover:border-purple-500'
+                    }`}
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+
+              {/* Free-text input */}
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={finalPassion}
+                  onChange={(e) => setFinalPassion(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                  placeholder="Or type your own passion / field…"
+                  className="flex-1 px-5 py-3 rounded-xl bg-purple-800/40 border border-purple-700/50 text-white placeholder-purple-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={!finalPassion.trim()}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-purple-500/30"
+                >
+                  <Send size={18} />
+                  Continue
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

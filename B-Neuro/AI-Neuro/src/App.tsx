@@ -48,8 +48,14 @@ function AppRoutes() {
   const navigate = useNavigate();
   const { userName } = useAuth();
 
-  const handleSkillPassionAnswer = (knowsSkill: boolean) => {
-    navigate(knowsSkill ? "/relevant-skill-question" : "/chat2");
+  // #1 — SkillPassionQuestion: now receives passion string when user knows it
+  const handleSkillPassionAnswer = (knowsSkill: boolean, passion?: string) => {
+    if (knowsSkill) {
+      setPassion(passion ?? "");
+      navigate("/relevant-skill-question");
+    } else {
+      navigate("/chat2");
+    }
   };
 
   const handleChat2Complete = (predictedPassion: string) => {
@@ -57,7 +63,9 @@ function AppRoutes() {
     navigate("/chatbot-analysis");
   };
 
-  const handleChatbotComplete = () => {
+  // #2 — ChatbotAnalysis: now receives final passion string
+  const handleChatbotComplete = (passion: string) => {
+    setPassion(passion);
     navigate("/relevant-skill-question");
   };
 
@@ -144,6 +152,7 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <SkillDevelopmentPrograms
+              passion={getPassion()}
               onContinue={handleSkillDevelopmentContinue}
               onBack={() => navigate(-1)}
             />
@@ -156,6 +165,7 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <CoursesAndScholarships
+              passion={getPassion()}
               onContinue={handleCoursesAndScholarshipsContinue}
               onBack={() => navigate(-1)}
             />

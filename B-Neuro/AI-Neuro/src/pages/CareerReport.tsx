@@ -1,8 +1,12 @@
-import { useRef } from 'react';
-import { FileText, TrendingUp, Target, Award, BookOpen, Download, Home, Building2, GraduationCap } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  Upload, FileText, Loader2, Download, Home, CheckCircle,
+  AlertCircle, TrendingUp, Target, BookOpen, Building2, Award, Sparkles, BarChart3, Link2, Globe, ExternalLink
+} from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { getCareerData } from '../data/careerDataset';
+
+const BACKEND_URL = 'http://localhost:5000';
 
 interface CareerReportProps {
   onRestart: () => void;
@@ -10,293 +14,421 @@ interface CareerReportProps {
   userName: string;
 }
 
+interface AIAnalysis {
+  strengths: string[];
+  skillGaps: string[];
+  careerFitScore: number;
+  careerFitReason: string;
+  recommendedCourses: string[];
+  recommendedInstitutions: string[];
+  scholarships: string[];
+  summary: string;
+}
+
+interface LiveLink {
+  title: string;
+  url: string;
+  category: string;
+}
+
 export function CareerReport({ onRestart, passion, userName }: CareerReportProps) {
   const reportRef = useRef<HTMLDivElement>(null);
-  const careerData = getCareerData(passion);
-  
+
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
+  const [liveLinks, setLiveLinks] = useState<LiveLink[]>([]);
+
+  // Fetch live career data to enrich the report
+  useEffect(() => {
+    if (!passion) return;
+    fetch(`${BACKEND_URL}/api/career/data?field=${encodeURIComponent(passion)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.liveLinks?.length) setLiveLinks(data.liveLinks);
+      })
+      .catch(() => {/* non-critical */});
+  }, [passion]);
+
+  // ─── Drag & Drop handlers ───────────────────────────────────────────────
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => setIsDragging(false), []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) validateAndSet(dropped);
+  }, []);
+
+  const validateAndSet = (f: File) => {
+    const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowed.includes(f.type)) {
+      setError('Only PDF and .docx files are supported.');
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setError('File must be under 10 MB.');
+      return;
+    }
+    setError('');
+    setFile(f);
+    setAnalysis(null);
+  };
+
+  // ─── Upload & analyse ───────────────────────────────────────────────────
+  const handleAnalyse = async () => {
+    if (!file) return;
+    setLoading(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('field', passion || 'General Career');
+
+      const res = await fetch('http://localhost:5000/api/resume/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAnalysis(data);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── PDF download ───────────────────────────────────────────────────────
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
-
     try {
-      const element = reportRef.current;
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(reportRef.current, {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#1e1b4b'
+        backgroundColor: '#1e1b4b',
       });
-
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`NeuroPath-Career-Report-${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
+      const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+      const imgX = (pdfWidth - canvas.width * ratio) / 2;
+      pdf.addImage(imgData, 'PNG', imgX, 0, canvas.width * ratio, canvas.height * ratio);
+      pdf.save(`Neuro-Career-Guidance-${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
+    } catch {
       alert('Failed to generate PDF. Please try again.');
     }
   };
 
-  // If no career data found, show default/fallback
-  if (!careerData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 px-6 py-12 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">No Career Data Available</h1>
-          <p className="text-purple-200 mb-6">Please complete the assessment first.</p>
-          <button
-            onClick={onRestart}
-            className="px-8 py-4 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
-          >
-            Start Assessment
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // ─── Score color helper ─────────────────────────────────────────────────
+  const scoreColor = (score: number) => {
+    if (score >= 75) return 'text-green-400';
+    if (score >= 50) return 'text-yellow-400';
+    return 'text-red-400';
+  };
 
-  const getTagColor = (color: string) => {
-    const colors: { [key: string]: string } = {
-      green: 'bg-green-500/20 text-green-300 border-green-500/50',
-      blue: 'bg-blue-500/20 text-blue-300 border-blue-500/50',
-      yellow: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-      purple: 'bg-purple-500/20 text-purple-300 border-purple-500/50',
-      red: 'bg-red-500/20 text-red-300 border-red-500/50',
-      pink: 'bg-pink-500/20 text-pink-300 border-pink-500/50'
-    };
-    return colors[color] || colors.blue;
+  const scoreBg = (score: number) => {
+    if (score >= 75) return 'from-green-600/30 to-green-800/10 border-green-500/40';
+    if (score >= 50) return 'from-yellow-600/30 to-yellow-800/10 border-yellow-500/40';
+    return 'from-red-600/30 to-red-800/10 border-red-500/40';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 px-6 py-12">
       <div className="max-w-5xl mx-auto" ref={reportRef}>
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
-            <FileText size={40} className="text-purple-300" />
+            <Sparkles size={40} className="text-purple-300" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {userName}'s Personalized Career Report
+            Get Personalized Guidance from Neuro
           </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-            A comprehensive analysis of your career path and recommendations
+            Upload your resume and let Neuro analyse it against your passion for{' '}
+            <span className="text-white font-semibold">{passion || 'your field'}</span>
           </p>
         </div>
 
-        <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-purple-800 to-purple-900 px-8 py-6 border-b border-purple-700/50">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-1">Career Path Analysis for {userName}</h2>
-                <p className="text-purple-300 text-sm">Generated on {new Date().toLocaleDateString()}</p>
-                <p className="text-purple-200 font-semibold mt-1">Your Identified Passion: {careerData.passion}</p>
-              </div>
-              <button 
-                onClick={handleDownloadPDF}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-purple-700/50 hover:bg-purple-700 text-white font-medium transition-all"
-              >
-                <Download size={18} />
-                Download Report
-              </button>
+        {/* ── Upload Card ─────────────────────────────────────────────────── */}
+        {!analysis && (
+          <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8 md:p-12 mb-8">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer ${
+                isDragging
+                  ? 'border-purple-400 bg-purple-800/40 scale-[1.01]'
+                  : 'border-purple-700/60 hover:border-purple-500 hover:bg-purple-800/20'
+              }`}
+              onClick={() => document.getElementById('resume-file-input')?.click()}
+            >
+              <input
+                id="resume-file-input"
+                type="file"
+                accept=".pdf,.docx"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && validateAndSet(e.target.files[0])}
+              />
+              <Upload size={48} className="text-purple-400 mx-auto mb-4" />
+              <p className="text-xl font-semibold text-white mb-2">
+                {file ? file.name : 'Drag & drop your resume here'}
+              </p>
+              <p className="text-purple-300 text-sm mb-4">
+                {file
+                  ? `${(file.size / 1024).toFixed(1)} KB — PDF or DOCX`
+                  : 'or click to browse — PDF and .docx accepted (max 10 MB)'}
+              </p>
+              {file && (
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 text-sm font-medium">
+                  <CheckCircle size={16} />
+                  Ready to analyse
+                </span>
+              )}
             </div>
+
+            {error && (
+              <div className="mt-4 flex items-center gap-2 text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleAnalyse}
+              disabled={!file || loading}
+              className="mt-6 w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-lg font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl shadow-purple-500/40"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={22} className="animate-spin" />
+                  Neuro is reading your resume…
+                </>
+              ) : (
+                <>
+                  <Sparkles size={22} />
+                  Analyse My Resume
+                </>
+              )}
+            </button>
           </div>
+        )}
 
-          <div className="p-8 space-y-8">
-            <section>
+        {/* ── Analysis Results ─────────────────────────────────────────────── */}
+        {analysis && (
+          <div className="space-y-6 mb-10">
+
+            {/* ── Report header banner ─── */}
+            <div className="bg-gradient-to-r from-purple-800 to-purple-900 border border-purple-700/50 rounded-2xl px-8 py-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Neuro's Career Analysis for {userName}
+                  </h2>
+                  <p className="text-purple-300 text-sm">
+                    Generated on {new Date().toLocaleDateString()} · Passion: <span className="text-white font-semibold">{passion}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-purple-700/50 hover:bg-purple-700 text-white font-medium transition-all"
+                >
+                  <Download size={18} />
+                  Download Report
+                </button>
+              </div>
+            </div>
+
+            {/* ── Career Fit Score ─── */}
+            <div className={`bg-gradient-to-br ${scoreBg(analysis.careerFitScore)} backdrop-blur-sm border rounded-2xl p-8`}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <Target size={24} className="text-purple-300" />
+                  <BarChart3 size={24} className="text-purple-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Relevant Skills for {careerData.passion}</h3>
+                <h3 className="text-2xl font-bold text-white">Career Fit Score</h3>
               </div>
-              <div className="ml-15 bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                <p className="text-purple-200 mb-4">
-                  Based on your passion for {careerData.passion}, here are the key skills you should develop:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {careerData.relevantSkills.map((skill, index) => (
-                    <span 
-                      key={index}
-                      className="px-4 py-2 rounded-full bg-purple-700/50 text-purple-200 border border-purple-600/50 font-medium"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex items-end gap-4 mb-3">
+                <span className={`text-7xl font-black ${scoreColor(analysis.careerFitScore)}`}>
+                  {analysis.careerFitScore}
+                </span>
+                <span className="text-purple-300 text-2xl mb-2">/ 100</span>
               </div>
-            </section>
+              {/* Progress bar */}
+              <div className="w-full h-3 bg-purple-950/60 rounded-full overflow-hidden mb-3">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    analysis.careerFitScore >= 75
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-400'
+                      : analysis.careerFitScore >= 50
+                      ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                      : 'bg-gradient-to-r from-red-500 to-rose-400'
+                  }`}
+                  style={{ width: `${analysis.careerFitScore}%` }}
+                />
+              </div>
+              <p className="text-purple-200">{analysis.careerFitReason}</p>
+            </div>
 
-            <section>
+            {/* ── Summary ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <TrendingUp size={24} className="text-purple-300" />
+                  <Sparkles size={24} className="text-purple-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Recommended Career Paths</h3>
+                <h3 className="text-2xl font-bold text-white">Neuro's Summary</h3>
               </div>
-              <div className="ml-15 space-y-4">
-                {careerData.careerPaths.map((career, index) => (
-                  <div key={index} className="bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                    <h4 className="text-xl font-bold text-white mb-2">{index + 1}. {career.title}</h4>
-                    <p className="text-purple-200 mb-3">
-                      {career.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {career.tags.map((tag, tagIndex) => (
-                        <span 
-                          key={tagIndex}
-                          className={`text-xs px-3 py-1 rounded-full border ${getTagColor(tag.color)}`}
-                        >
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
+              <p className="text-purple-100 leading-relaxed text-lg">{analysis.summary}</p>
+            </div>
+
+            {/* ── Strengths ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
+                  <TrendingUp size={24} className="text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Strengths Found in Your Resume</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analysis.strengths.map((s, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+                    <CheckCircle size={18} className="text-green-400 mt-0.5 shrink-0" />
+                    <p className="text-purple-100">{s}</p>
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            <section>
-              <div className="flex items-center gap-3 mb-4">
+            {/* ── Skill Gaps ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <GraduationCap size={24} className="text-purple-300" />
+                  <Target size={24} className="text-orange-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Recommended Courses & Degrees</h3>
+                <h3 className="text-2xl font-bold text-white">Skill Gaps to Bridge</h3>
               </div>
-              <div className="ml-15 bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                <p className="text-purple-200 mb-4">
-                  Here are the top courses to help you excel in {careerData.passion}:
-                </p>
-                <ul className="space-y-2">
-                  {careerData.courses.map((course, index) => (
-                    <li key={index} className="text-purple-100 flex items-start gap-2">
-                      <span className="text-purple-400 mt-1">•</span>
-                      <span className="font-medium">{course}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analysis.skillGaps.map((g, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-3">
+                    <AlertCircle size={18} className="text-orange-400 mt-0.5 shrink-0" />
+                    <p className="text-purple-100">{g}</p>
+                  </div>
+                ))}
               </div>
-            </section>
+            </div>
 
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <Building2 size={24} className="text-purple-300" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Top Institutions</h3>
-              </div>
-              <div className="ml-15 bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                <p className="text-purple-200 mb-4">
-                  Consider these renowned institutions for your studies:
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {careerData.institutions.map((institution, index) => (
-                    <div 
-                      key={index}
-                      className="bg-purple-700/30 rounded-lg p-3 border border-purple-600/50"
-                    >
-                      <p className="text-purple-100 font-medium">{institution}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <Award size={24} className="text-purple-300" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Training Programs</h3>
-              </div>
-              <div className="ml-15 bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                <p className="text-purple-200 mb-4">
-                  Enhance your skills with these specialized training programs:
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {careerData.trainingPrograms.map((program, index) => (
-                    <div 
-                      key={index}
-                      className="bg-purple-700/30 rounded-lg p-3 border border-purple-600/50 flex items-center gap-2"
-                    >
-                      <span className="text-purple-400">✓</span>
-                      <p className="text-purple-100">{program}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <div className="flex items-center gap-3 mb-4">
+            {/* ── Recommended Courses ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
                   <BookOpen size={24} className="text-purple-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Next Steps</h3>
+                <h3 className="text-2xl font-bold text-white">Recommended Courses</h3>
               </div>
-              <div className="ml-15 bg-purple-800/30 rounded-xl p-6 border border-purple-700/50">
-                <ol className="list-decimal list-inside space-y-3 text-purple-200">
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Skill Development:</span> Start with the recommended courses to build your foundation in {careerData.passion}
+              <ul className="space-y-3">
+                {analysis.recommendedCourses.map((course, i) => (
+                  <li key={i} className="flex items-start gap-3 text-purple-100">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-700/60 text-purple-300 text-xs font-bold shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span className="font-medium">{course}</span>
                   </li>
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Apply to Institutions:</span> Research and apply to the top institutions listed above
-                  </li>
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Training Programs:</span> Enroll in specialized training programs to gain practical experience
-                  </li>
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Build Portfolio:</span> Start working on projects that showcase your skills
-                  </li>
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Network:</span> Connect with professionals in the {careerData.passion} field
-                  </li>
-                  <li className="pl-2">
-                    <span className="font-semibold text-white">Stay Updated:</span> Keep learning and adapting to the latest trends in your field
-                  </li>
-                </ol>
-              </div>
-            </section>
+                ))}
+              </ul>
+            </div>
 
-            <section>
-              <div className="flex items-center gap-3 mb-4">
+            {/* ── Recommended Institutions ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
-                  <FileText size={24} className="text-purple-300" />
+                  <Building2 size={24} className="text-purple-300" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Summary of Resources</h3>
+                <h3 className="text-2xl font-bold text-white">Recommended Institutions</h3>
               </div>
-              <div className="ml-15 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-purple-800/30 rounded-xl p-4 border border-purple-700/50">
-                  <h4 className="font-bold text-white mb-1">Training Programs</h4>
-                  <p className="text-purple-300 text-sm">{careerData.trainingPrograms.length} relevant programs</p>
-                </div>
-                <div className="bg-purple-800/30 rounded-xl p-4 border border-purple-700/50">
-                  <h4 className="font-bold text-white mb-1">Courses</h4>
-                  <p className="text-purple-300 text-sm">{careerData.courses.length} recommended courses</p>
-                </div>
-                <div className="bg-purple-800/30 rounded-xl p-4 border border-purple-700/50">
-                  <h4 className="font-bold text-white mb-1">Institutions</h4>
-                  <p className="text-purple-300 text-sm">{careerData.institutions.length} top institutions</p>
-                </div>
-                <div className="bg-purple-800/30 rounded-xl p-4 border border-purple-700/50">
-                  <h4 className="font-bold text-white mb-1">Career Paths</h4>
-                  <p className="text-purple-300 text-sm">{careerData.careerPaths.length} recommended paths</p>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analysis.recommendedInstitutions.map((inst, i) => (
+                  <div key={i} className="bg-purple-700/30 rounded-xl px-4 py-3 border border-purple-600/50">
+                    <p className="text-purple-100 font-medium">{inst}</p>
+                  </div>
+                ))}
               </div>
-            </section>
-          </div>
-        </div>
+            </div>
 
+            {/* ── Live Resources from Internet ─── */}
+            {liveLinks.length > 0 && (
+              <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
+                    <Globe size={24} className="text-purple-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Live Resources</h3>
+                    <p className="text-purple-400 text-xs mt-0.5">Fetched from the internet for {passion}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {liveLinks.slice(0, 8).map((link, i) => (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 bg-purple-800/20 rounded-xl px-4 py-3 hover:bg-purple-800/40 border border-purple-700/30 hover:border-purple-600 transition-all group"
+                    >
+                      <Link2 size={16} className="text-purple-400 shrink-0" />
+                      <span className="text-purple-100 text-sm truncate group-hover:text-white transition-colors flex-1">{link.title}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-700/50 text-purple-300 border border-purple-600/50 shrink-0 capitalize">{link.category}</span>
+                      <ExternalLink size={13} className="text-purple-400 shrink-0" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Scholarships ─── */}
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-800/50">
+                  <Award size={24} className="text-purple-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Relevant Scholarships</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analysis.scholarships.map((sch, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-purple-800/30 rounded-xl px-4 py-3 border border-purple-700/50">
+                    <span className="text-purple-400 mt-1">✦</span>
+                    <p className="text-purple-100">{sch}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Upload another ─── */}
+            <button
+              onClick={() => { setFile(null); setAnalysis(null); setError(''); }}
+              className="w-full py-3 rounded-xl border border-purple-700/50 text-purple-300 hover:text-white hover:border-purple-500 transition-all text-sm font-medium"
+            >
+              ↑ Upload a different resume
+            </button>
+          </div>
+        )}
+
+        {/* ── Bottom Actions ──────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={onRestart}
@@ -305,13 +437,15 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
             <Home size={24} />
             Return to Home
           </button>
-          <button 
-            onClick={handleDownloadPDF}
-            className="group inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
-          >
-            <Download size={24} />
-            Download Full Report as PDF
-          </button>
+          {analysis && (
+            <button
+              onClick={handleDownloadPDF}
+              className="group inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 text-white text-xl font-bold transition-all transform hover:scale-105 shadow-2xl shadow-purple-500/50"
+            >
+              <Download size={24} />
+              Download Full Report as PDF
+            </button>
+          )}
         </div>
       </div>
     </div>

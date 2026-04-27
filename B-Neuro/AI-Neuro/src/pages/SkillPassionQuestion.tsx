@@ -1,11 +1,57 @@
-import { Lightbulb, HelpCircle, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Lightbulb, HelpCircle, ArrowLeft, Send, Sparkles, Loader2 } from 'lucide-react';
+
+const BACKEND_URL = 'http://localhost:5000';
 
 interface SkillPassionQuestionProps {
-  onAnswer: (knowsSkill: boolean) => void;
+  onAnswer: (knowsSkill: boolean, passion?: string) => void;
   onBack?: () => void;
 }
 
+const QUICK_PICKS = [
+  'Technology & Software',
+  'Data Science & AI',
+  'Business & Entrepreneurship',
+  'Arts & Design',
+  'Healthcare & Medicine',
+  'Agriculture & Environment',
+  'Education & Teaching',
+  'Finance & Economics',
+  'Engineering',
+  'Media & Communication',
+];
+
 export function SkillPassionQuestion({ onAnswer, onBack }: SkillPassionQuestionProps) {
+  const [showPassionInput, setShowPassionInput] = useState(false);
+  const [passionValue, setPassionValue] = useState('');
+  const [preWarming, setPreWarming] = useState(false);
+
+  const handleYesClick = () => {
+    setShowPassionInput(true);
+  };
+
+  const handleChipClick = (chip: string) => {
+    setPassionValue(chip);
+  };
+
+  const handleSubmit = async () => {
+    const trimmed = passionValue.trim();
+    if (!trimmed) return;
+    // Fire-and-forget background enrichment so backend has a head start
+    setPreWarming(true);
+    try {
+      fetch(`${BACKEND_URL}/api/career/enrich`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: trimmed }),
+      }).catch(() => {/* ignore network errors */});
+      // Short delay so server receives the request before we navigate away
+      await new Promise(r => setTimeout(r, 300));
+    } catch { /* ignore */ }
+    setPreWarming(false);
+    onAnswer(true, trimmed);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
       <div className="max-w-4xl w-full">
@@ -37,8 +83,12 @@ export function SkillPassionQuestion({ onAnswer, onBack }: SkillPassionQuestionP
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
-              onClick={() => onAnswer(true)}
-              className="group relative overflow-hidden bg-gradient-to-br from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 border-2 border-purple-600/50 hover:border-purple-500 rounded-2xl p-8 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+              onClick={handleYesClick}
+              className={`group relative overflow-hidden bg-gradient-to-br from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 border-2 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/50 rounded-2xl p-8 ${
+                showPassionInput
+                  ? 'border-purple-400 shadow-purple-500/50'
+                  : 'border-purple-600/50 hover:border-purple-500'
+              }`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/20 to-purple-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
               <div className="relative">
@@ -68,6 +118,58 @@ export function SkillPassionQuestion({ onAnswer, onBack }: SkillPassionQuestionP
               </div>
             </button>
           </div>
+
+          {/* Inline passion input — revealed only after "Yes, I Know" */}
+          {showPassionInput && (
+            <div className="mt-10 animate-fade-in">
+              <div className="border-t border-purple-700/50 pt-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={20} className="text-purple-400" />
+                  <h3 className="text-xl font-bold text-white">What is your skill or passion?</h3>
+                </div>
+
+                {/* Quick-pick chips */}
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {QUICK_PICKS.map((chip) => (
+                    <button
+                      key={chip}
+                      onClick={() => handleChipClick(chip)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                        passionValue === chip
+                          ? 'bg-purple-600 text-white border-purple-400 shadow-lg shadow-purple-500/30'
+                          : 'bg-purple-800/40 text-purple-200 border-purple-700/50 hover:bg-purple-700/50 hover:border-purple-500'
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Free-text input */}
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={passionValue}
+                    onChange={(e) => setPassionValue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                    placeholder="Or type your own (e.g., Robotics, Fashion Design…)"
+                    className="flex-1 px-5 py-3 rounded-xl bg-purple-800/40 border border-purple-700/50 text-white placeholder-purple-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!passionValue.trim() || preWarming}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-purple-500/30"
+                  >
+                    {preWarming ? (
+                      <><Loader2 size={18} className="animate-spin" /> Preparing…</>
+                    ) : (
+                      <><Send size={18} /> Continue</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="text-center">
