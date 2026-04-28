@@ -1,5 +1,5 @@
 # Neuropath-AI
-A career guide that can map passion, skill,scholarships,best institutions and course
+A career guide that can map passion, skill,scholarships,best institutions and course with chat support and a personalized level analyser and roadmap generation with Agentic AI.
 # 🧠 NeuroPath
 
 ### *Your Intelligent Career Compass for a Brighter Future*
