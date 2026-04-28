@@ -20,6 +20,32 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 dotenv.config();
 
 const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
+
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+  maxHttpBufferSize: 1e8 // 100 MB payload limit for large resumes
+});
+
+io.on('connection', (socket) => {
+  socket.on('join-room', (roomId) => {
+    socket.join(roomId);
+  });
+  
+  socket.on('file-pick-up', (data) => {
+    socket.to(data.roomId).emit('file-picked-up', data);
+  });
+  
+  socket.on('request-file-release', (data) => {
+    socket.to(data.roomId).emit('file-released', data);
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -918,7 +944,7 @@ app.post('/api/resume/analyze', upload.single('file'), async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Start server
 // ─────────────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📡 New routes: POST /api/career/enrich  |  GET /api/career/data`);
 });

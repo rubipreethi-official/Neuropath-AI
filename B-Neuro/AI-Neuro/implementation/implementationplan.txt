@@ -1,59 +1,18 @@
-Neuropath — Live Scraping + LLM Pipeline Fix
-Problem Summary
-When a user clicks "Yes, I Know my passion & skill" and enters a field, the app navigates to courses/scholarships pages — but those pages show static/stale fallback data instead of live internet-sourced results. The root causes are:
+The New "Magical" ArchitectureAutomated Pairing: The laptop generates a unique roomID. It displays a QR code that encodes your ngrok URL with that ID as a parameter (e.g., .../transfer?room=abc-123).Instant Connect: Scanning the QR on your phone opens the browser and automatically joins the correct Socket.io room.The "Grab" (Mobile): MediaPipe tracks hand landmarks. When the distance between the Thumb Tip (Landmark 4) and Index Tip (Landmark 8) is $< 0.05$, the "Grab" is triggered. The file is read as a Base64 string and sent to the server.The "Drop" (Laptop): The laptop camera looks for an "Open Palm" (all fingers extended). When detected, it asks the server to "release" the file to the laptop's UI.
 
-Scrapers silently fail: NPTEL, Swayam, MIT OCW, Unstop, Devpost all use client-side JavaScript rendering — axios + cheerio only gets empty HTML shells. Every scrape returns 0 results and silently falls back to hardcoded or LLM data.
-LLM fallback uses stale training data: The current NVIDIA Qwen prompts ask the model to recall data from its training, not to search the internet. No web URLs are retrieved.
-No MongoDB persistence of results per user: Scraped/LLM results are only stored in a 30-min in-memory cache. After a server restart, everything is lost and re-fetched from scratch.
-Scraping is triggered on component mount, not when the user submits their passion. So there's no head-start and the user sees a loading spinner every time.
-Proposed Solution Architecture
-User enters passion
-       │
-       ▼
-Backend: POST /api/career/enrich?field=<field>  ← triggered immediately on passion submit
-       │
-       ▼
-[Step 1] LLM (Qwen) asked: "What are the best URLs on Naukri, LinkedIn, Unstop, 
-          Coursera, NSP, AICTE, etc. for <field> right now?"
-       │
-       ▼
-[Step 2] Axios fetches those LLM-recommended URLs + fixed reliable sources
-         (Google Scholar links, OpenAlex API, Coursera search API, NSP gov API)
-       │
-       ▼
-[Step 3] Cheerio parses scraped HTML for courses, scholarships, institutions, jobs
-       │
-       ▼
-[Step 4] LLM synthesises & enriches: takes raw scraped text → structured JSON
-       │
-       ▼
-[Step 5] Result stored in MongoDB collection: career_data
-         { field, courses[], scholarships[], institutions[], training[], 
-           liveLinks[], userId, createdAt }
-       │
-       ▼
-Frontend fetches from GET /api/career/data?field=<field>
-(returns DB-cached result if fresh < 6h, else re-triggers enrich)
-User Review Required
-IMPORTANT
+"Update the 'Magic Grab & Drop' implementation.
 
-The scraper uses the LLM to recommend URLs (not scrape Twitter/LinkedIn directly — those require auth). Instead, it scrapes:
+Eliminate manual codes. In CareerReport.tsx, use qrcode.react to show a QR code pointing to https://overcommon-nonstanzaic-yuriko.ngrok-free.dev/transfer?roomID=${uniqueID}.
 
-Naukri.com job listings search pages (public)
-Unstop.com competitions (public)
-Coursera public search pages
-NSP (scholarships.gov.in) — public government portal
-AICTE — public
-LinkedIn public job pages (non-authenticated search results)
-Google News RSS for trending field news
-This is all done via legitimate public HTTP requests, same as a web browser would.
+Auto-Join: In MagicTransfer.tsx (Mobile), use useSearchParams to grab the roomID and join the Socket.io room immediately on mount.
 
-WARNING
+Hand Logic: >    - Mobile: Trigger 'Grab' if dist(thumb_tip, index_tip) < 0.05. On grab, emit file-pick-up with the PDF data.
 
-Many sites use JavaScript rendering. For sites that block cheerio-only scraping, we'll use:
+Laptop: Trigger 'Drop' if all_fingers_extended == true. On drop, emit request-file-release.
 
-Their search/API endpoints (JSON responses) instead of HTML
-Google News RSS feed as a reliable trending source
-LLM synthesis of scraped text even if partial
-
-ALSO MAKE SURE TO HAVE A FALLBACK IF THE SCRAPPING DIDN'T WWORK ON THE WEBSITES RECOMMENDED BY LLM GO FOR FALLBACK LIKE TWITTER, QUORA, REDDIT REVIEWS EVEN IF THAT DOESN'T WORK OR IF INSUFFICIENT JUST GET THE ANSWER FROM LLM'S KNOWLEDGE AND PERFORM ACCORDINGLY...
+Visuals: Add a 'floating file' icon on the laptop screen that follows the hand's x/y coordinates once the file is 'picked up' by the phone."
+Step,Action,Command / Tool
+1. Tunnel,Keep your current ngrok session alive.,ngrok http 5173
+2. Dependencies,Install the vision and QR libraries.,npm install @mediapipe/tasks-vision qrcode.react socket.io-client
+3. Permissions,Allow Camera access on both devices.,Browser Popup
+4. The Flow,Laptop: Click 'Sync Phone' -> Scan QR.Phone: Pick File -> Pinch Fingers (Grab).Laptop: Open Palm (Drop).,Hand Gestures

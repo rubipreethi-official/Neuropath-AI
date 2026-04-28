@@ -9,6 +9,7 @@ import { RelevantSkillQuestion } from "./pages/RelevantSkillQuestion";
 import { SkillDevelopmentPrograms } from "./pages/SkillDevelopmentPrograms";
 import { CoursesAndScholarships } from "./pages/CoursesAndScholarships";
 import { CareerReport } from "./pages/CareerReport";
+import { MagicTransfer } from "./pages/MagicTransfer";
 
 // ---------------------------------------------------------------------------
 // Helpers — passion is stored in sessionStorage so it survives navigation
@@ -29,7 +30,7 @@ function clearPassion() {
 // Auth guard — redirects to "/" if user is not logged in.
 // Pages listed in PUBLIC_PATHS are accessible without auth.
 // ---------------------------------------------------------------------------
-const PUBLIC_PATHS = ["/", "/chatbot-analysis"];
+const PUBLIC_PATHS = ["/", "/chatbot-analysis", "/transfer"];
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
@@ -107,6 +108,11 @@ function AppRoutes() {
             onBack={() => navigate("/")}
           />
         }
+      />
+
+      <Route
+        path="/transfer"
+        element={<MagicTransfer />}
       />
 
       {/* Auth-protected */}

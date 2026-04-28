@@ -1,10 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  Upload, FileText, Loader2, Download, Home, CheckCircle,
-  AlertCircle, TrendingUp, Target, BookOpen, Building2, Award, Sparkles, BarChart3, Link2, Globe, ExternalLink
+  Upload, FileText, Loader2, Download, Home, CheckCircle, Eye,
+  AlertCircle, TrendingUp, Target, BookOpen, Building2, Award, Sparkles, BarChart3, Link2, Globe, ExternalLink, Smartphone, Hand, FileUp
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { QRCodeSVG } from 'qrcode.react';
+import { io, Socket } from 'socket.io-client';
+import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
 const BACKEND_URL = 'http://localhost:5000';
 
@@ -81,6 +84,142 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
     setFile(f);
     setAnalysis(null);
   };
+
+  // ─── Magic Transfer State ───────────────────────────────────────────────
+  const [showSync, setShowSync] = useState(false);
+  const [roomId, setRoomId] = useState('');
+  const [qrUrl, setQrUrl] = useState('');
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [handLandmarker, setHandLandmarker] = useState<HandLandmarker | null>(null);
+  const [laptopVideoActive, setLaptopVideoActive] = useState(false);
+  const laptopVideoRef = useRef<HTMLVideoElement>(null);
+  const [floatingFile, setFloatingFile] = useState<{x: number, y: number, fileName: string, fileType: string} | null>(null);
+  const floatingFileRef = useRef(floatingFile);
+  const fileDataRef = useRef<string | null>(null);
+  const dropFramesRef = useRef(0);
+
+  useEffect(() => {
+    floatingFileRef.current = floatingFile;
+  }, [floatingFile]);
+
+  useEffect(() => {
+    const initMP = async () => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+        const landmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: "GPU" },
+          runningMode: "VIDEO", numHands: 1
+        });
+        setHandLandmarker(landmarker);
+      } catch (err) { console.error("MP init err", err); }
+    };
+    initMP();
+  }, []);
+
+  const generateSync = () => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setRoomId(id);
+    const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
+    setQrUrl(`${baseUrl}/transfer?roomID=${id}`);
+    setShowSync(true);
+
+    const newSocket = io();
+    setSocket(newSocket);
+    newSocket.on('connect', () => newSocket.emit('join-room', id));
+    newSocket.on('file-picked-up', (data) => {
+      fileDataRef.current = data.fileData;
+      setFloatingFile({ x: window.innerWidth / 2, y: window.innerHeight / 2, fileName: data.fileName, fileType: data.fileType });
+      startLaptopCamera();
+    });
+  };
+
+  const startLaptopCamera = () => {
+    setLaptopVideoActive(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+        .then(stream => {
+          if (laptopVideoRef.current) {
+            laptopVideoRef.current.srcObject = stream;
+            laptopVideoRef.current.play();
+          }
+        });
+    }
+  };
+
+  const detectLaptopHand = useCallback(() => {
+    if (!handLandmarker || !laptopVideoRef.current || !floatingFileRef.current) {
+      if (laptopVideoActive) requestAnimationFrame(detectLaptopHand);
+      return;
+    }
+
+    // Ensure the video is actually loaded and has dimensions before feeding to MediaPipe!
+    if (laptopVideoRef.current.readyState < 2 || laptopVideoRef.current.videoWidth === 0) {
+      if (laptopVideoActive) requestAnimationFrame(detectLaptopHand);
+      return;
+    }
+
+    const results = handLandmarker.detectForVideo(laptopVideoRef.current, performance.now());
+    if (results.landmarks && results.landmarks.length > 0) {
+      const landmarks = results.landmarks[0];
+      const indexTip = landmarks[8];
+      const newX = indexTip.x * window.innerWidth;
+      const newY = indexTip.y * window.innerHeight;
+      
+      setFloatingFile(prev => prev ? { ...prev, x: newX, y: newY } : null);
+
+      // Mathematically robust Open Palm detection:
+      // A finger is straight if its tip is further from the wrist than its middle joint (PIP).
+      // If the finger is curled, the tip gets closer to the wrist than the PIP.
+      const dist = (p1: any, p2: any) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      
+      const isExtended = (tipIdx: number, pipIdx: number) => dist(landmarks[0], landmarks[tipIdx]) > dist(landmarks[0], landmarks[pipIdx]);
+      
+      const thumbOpen = dist(landmarks[0], landmarks[4]) > dist(landmarks[0], landmarks[3]);
+      const fingersOpen = isExtended(8, 6) && isExtended(12, 10) && isExtended(16, 14) && isExtended(20, 18);
+      
+      const isOpenPalm = thumbOpen && fingersOpen;
+      
+      if (isOpenPalm) {
+        dropFramesRef.current += 1;
+      } else {
+        dropFramesRef.current = 0;
+      }
+      
+      // Require 15 consecutive frames (~0.25s) of open palm to trigger drop
+      if (dropFramesRef.current > 15 && socket) {
+        socket.emit('request-file-release', { roomId });
+        const dataUrl = fileDataRef.current;
+        if (dataUrl) {
+          const arr = dataUrl.split(',');
+          let mime = 'application/pdf';
+          const match = arr[0].match(/:(.*?);/);
+          if (match && match[1]) mime = match[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) u8arr[n] = bstr.charCodeAt(n);
+          const f = new File([u8arr], floatingFileRef.current.fileName, { type: mime });
+          validateAndSet(f);
+        }
+        setFloatingFile(null);
+        fileDataRef.current = null;
+        setLaptopVideoActive(false);
+        const stream = laptopVideoRef.current.srcObject as MediaStream;
+        stream?.getTracks().forEach(t => t.stop());
+        return;
+      }
+    }
+    
+    if (laptopVideoActive) requestAnimationFrame(detectLaptopHand);
+  }, [handLandmarker, laptopVideoActive, socket, roomId]);
+
+  useEffect(() => {
+    if (laptopVideoActive && floatingFile) detectLaptopHand();
+  }, [laptopVideoActive, detectLaptopHand, floatingFile]);
+
+  useEffect(() => {
+    return () => { if (socket) socket.disconnect(); }
+  }, [socket]);
 
   // ─── Upload & analyse ───────────────────────────────────────────────────
   const handleAnalyse = async () => {
@@ -160,7 +299,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
             Get Personalized Guidance from Neuro
           </h1>
           <p className="text-xl text-purple-200 max-w-2xl mx-auto">
-            Upload your resume and let Neuro analyse it against your passion for{' '}
+            Upload your current skills as a description doc or pdf and let Neuro analyse it against your passion for{' '}
             <span className="text-white font-semibold">{passion || 'your field'}</span>
           </p>
         </div>
@@ -196,12 +335,58 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
                   : 'or click to browse — PDF and .docx accepted (max 10 MB)'}
               </p>
               {file && (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 text-sm font-medium">
-                  <CheckCircle size={16} />
-                  Ready to analyse
-                </span>
+                <div className="flex flex-col items-center gap-3">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 border border-green-500/40 text-sm font-medium">
+                    <CheckCircle size={16} />
+                    Ready to analyse
+                  </span>
+                  
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const url = URL.createObjectURL(file);
+                      window.open(url, '_blank');
+                    }}
+                    className="flex items-center justify-center gap-2 px-6 py-2 rounded-full bg-purple-700/50 hover:bg-purple-600 border border-purple-500/50 text-white text-sm font-medium transition-all"
+                  >
+                    <Eye size={16} />
+                    Preview Document
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* Sync Phone Button */}
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={generateSync}
+                className="flex items-center gap-3 px-6 py-3 rounded-xl bg-purple-800/40 border border-purple-600/50 hover:bg-purple-700/50 transition-colors text-purple-200 text-lg"
+              >
+                <Smartphone size={22} />
+                Sync Phone for Magic Grab
+              </button>
+            </div>
+
+            {showSync && (
+              <div className="mt-6 flex flex-col items-center p-6 bg-purple-950/60 rounded-2xl border border-purple-500/30 text-center">
+                <p className="text-white font-medium mb-4 text-lg">Scan to select document on phone</p>
+                <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
+                  <QRCodeSVG value={qrUrl} size={180} />
+                </div>
+                <p className="text-purple-300 text-sm mt-4 break-all max-w-xs">{qrUrl}</p>
+                
+                {/* Hidden video for laptop camera tracking */}
+                <video ref={laptopVideoRef} className="hidden" playsInline muted />
+                
+                {floatingFile && (
+                  <div className="mt-6 flex items-center gap-3 text-green-400 bg-green-500/10 px-6 py-3 rounded-xl border border-green-500/30">
+                    <Hand size={24} className="animate-pulse" />
+                    <span className="font-semibold">File Grabbed! Open your palm to drop it here.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
 
             {error && (
               <div className="mt-4 flex items-center gap-2 text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm">
@@ -218,12 +403,12 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
               {loading ? (
                 <>
                   <Loader2 size={22} className="animate-spin" />
-                  Neuro is reading your resume…
+                  Neuro is reading your file…
                 </>
               ) : (
                 <>
                   <Sparkles size={22} />
-                  Analyse My Resume
+                  Analyse My Skills through my document
                 </>
               )}
             </button>
@@ -448,6 +633,19 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
           )}
         </div>
       </div>
+
+      {/* Floating File Icon */}
+      {floatingFile && (
+        <div 
+          className="fixed pointer-events-none z-50 flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 drop-shadow-2xl"
+          style={{ left: floatingFile.x, top: floatingFile.y }}
+        >
+          <FileUp size={64} className="text-purple-400 animate-pulse" />
+          <div className="bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full mt-2 border border-purple-500/50">
+            <span className="text-white font-medium text-sm">{floatingFile.fileName}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
