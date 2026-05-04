@@ -6,7 +6,14 @@ import { Upload, CheckCircle, Sparkles, Smartphone, Hand } from 'lucide-react';
 
 export function MagicTransfer() {
   const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('roomID');
+  const urlRoomId = searchParams.get('roomID');
+  const roomId = urlRoomId || localStorage.getItem('magic_grab_room_id');
+
+  useEffect(() => {
+    if (urlRoomId) {
+      localStorage.setItem('magic_grab_room_id', urlRoomId);
+    }
+  }, [urlRoomId]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const [file, setFile] = useState<File | null>(null);

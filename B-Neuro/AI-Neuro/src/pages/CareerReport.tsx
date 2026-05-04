@@ -116,13 +116,20 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
     initMP();
   }, []);
 
-  const generateSync = () => {
-    const id = Math.random().toString(36).substring(2, 9);
+  const generateSync = (forceNew = false) => {
+    let id = localStorage.getItem('magic_grab_room_id');
+    if (!id || forceNew) {
+      id = Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('magic_grab_room_id', id);
+    }
     setRoomId(id);
     const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin;
     setQrUrl(`${baseUrl}/transfer?roomID=${id}`);
     setShowSync(true);
 
+    if (socket) {
+      socket.disconnect();
+    }
     const newSocket = io();
     setSocket(newSocket);
     newSocket.on('connect', () => newSocket.emit('join-room', id));
@@ -131,6 +138,10 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
       setFloatingFile({ x: window.innerWidth / 2, y: window.innerHeight / 2, fileName: data.fileName, fileType: data.fileType });
       startLaptopCamera();
     });
+  };
+
+  const connectOtherDevice = () => {
+    generateSync(true);
   };
 
   const startLaptopCamera = () => {
@@ -369,11 +380,23 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
 
             {showSync && (
               <div className="mt-6 flex flex-col items-center p-6 bg-purple-950/60 rounded-2xl border border-purple-500/30 text-center">
-                <p className="text-white font-medium mb-4 text-lg">Scan to select document on phone</p>
-                <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
-                  <QRCodeSVG value={qrUrl} size={180} />
-                </div>
+                <p className="text-white font-medium mb-4 text-lg">
+                  {localStorage.getItem('magic_grab_room_id') === roomId ? "Waiting for file from your synced phone..." : "Scan to select document on phone"}
+                </p>
+                
+                {localStorage.getItem('magic_grab_room_id') !== roomId && (
+                  <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
+                    <QRCodeSVG value={qrUrl} size={180} />
+                  </div>
+                )}
                 <p className="text-purple-300 text-sm mt-4 break-all max-w-xs">{qrUrl}</p>
+
+                <button 
+                  onClick={connectOtherDevice}
+                  className="mt-6 text-sm text-purple-300 hover:text-white underline underline-offset-4 transition-colors"
+                >
+                  Connect a different device
+                </button>
                 
                 {/* Hidden video for laptop camera tracking */}
                 <video ref={laptopVideoRef} className="hidden" playsInline muted />
