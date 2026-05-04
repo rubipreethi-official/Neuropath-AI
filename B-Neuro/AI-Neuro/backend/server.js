@@ -166,7 +166,7 @@ app.use(express.json());
 // ─────────────────────────────────────────────────────────────────────────────
 // MongoDB Connection
 // ─────────────────────────────────────────────────────────────────────────────
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rubipreethi:preethi04@cluster0.jpityqm.mongodb.net/?appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI, {
   dbName: 'neuropath_db',
