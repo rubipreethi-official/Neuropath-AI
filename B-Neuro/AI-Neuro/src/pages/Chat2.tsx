@@ -7,10 +7,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Brain, Send, ArrowLeft, ArrowRight, ChevronRight,
-  Mail, CheckCircle, Sparkles, Loader2, Download
+  Mail, CheckCircle, Sparkles, Loader2, Download, FileText
 } from "lucide-react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -469,8 +467,7 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   const [roadmapLoading, setRoadmapLoading] = useState(false);
   const [roadmapError,   setRoadmapError]   = useState("");
 
-  const [pdfGenerating, setPdfGenerating] = useState(false);
-  const roadmapContainerRef = useRef<HTMLDivElement>(null);
+
 
   // ── PAGE PERSISTENCE via sessionStorage ──────────────────────────────────
   useEffect(() => {
@@ -689,27 +686,28 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
     }
   }, [selectedCard]);
 
-  const downloadPDF = async () => {
-    if (!roadmapContainerRef.current) return;
-    setPdfGenerating(true);
-    try {
-      const canvas = await html2canvas(roadmapContainerRef.current, {
-        backgroundColor: "#2e1065", // purple-950 roughly
-        scale: 2,
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: [canvas.width, canvas.height]
-      });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-      pdf.save(`${selectedCard?.title?.replace(/\s+/g, '_') || 'career'}_roadmap.pdf`);
-    } catch (error) {
-      console.error("Failed to generate PDF", error);
-    } finally {
-      setPdfGenerating(false);
-    }
+  const downloadRoadmap = () => {
+    if (roadmapSteps.length === 0) return;
+    
+    let content = `Your Career Roadmap: ${selectedCard?.title || interest}\n`;
+    content += `=======================================================\n\n`;
+    
+    roadmapSteps.forEach((step, i) => {
+      content += `Step ${i + 1}: ${step.phase} - ${step.title}\n`;
+      content += `${step.description}\n`;
+      if (step.resources && step.resources.length > 0) {
+        content += `Resources: ${step.resources.join(', ')}\n`;
+      }
+      content += `\n-------------------------------------------------------\n\n`;
+    });
+    
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${selectedCard?.title?.replace(/\s+/g, '_') || 'career'}_roadmap.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -929,14 +927,13 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
         )}
 
         {!roadmapLoading && !roadmapError && roadmapSteps.length > 0 && (
-          <div className="max-w-2xl mx-auto" ref={roadmapContainerRef}>
+          <div className="max-w-2xl mx-auto">
             {roadmapSteps.map((step, i) => (
               <RoadmapStepItem key={i} step={step} index={i} isLast={i === roadmapSteps.length - 1} />
             ))}
-            <div className="mt-12 text-center flex flex-col items-center" data-html2canvas-ignore="true">
-              <BigCTA onClick={downloadPDF} disabled={pdfGenerating}>
-                {pdfGenerating ? <Loader2 size={22} className="animate-spin" /> : <Download size={22} />} 
-                {pdfGenerating ? "Generating PDF..." : "Download Roadmap as PDF"}
+            <div className="mt-12 text-center flex flex-col items-center">
+              <BigCTA onClick={downloadRoadmap}>
+                <FileText size={22} /> Download Roadmap (Text)
               </BigCTA>
               
               <button onClick={() => onComplete(interest)} className="mt-8 text-purple-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-semibold tracking-wide">

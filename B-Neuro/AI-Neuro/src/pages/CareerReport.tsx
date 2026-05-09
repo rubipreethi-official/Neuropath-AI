@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Upload, FileText, Loader2, Download, Home, CheckCircle, Eye,
-  AlertCircle, TrendingUp, Target, BookOpen, Building2, Award, Sparkles, BarChart3, Link2, Globe, ExternalLink, Smartphone, Hand, FileUp
+  AlertCircle, TrendingUp, Target, BookOpen, Building2, Award, Sparkles, BarChart3, Link2, Globe, ExternalLink, Smartphone, Hand, FileUp, Mail
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -94,6 +94,9 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
   const [laptopVideoActive, setLaptopVideoActive] = useState(false);
   const laptopVideoRef = useRef<HTMLVideoElement>(null);
   const [floatingFile, setFloatingFile] = useState<{ x: number, y: number, fileName: string, fileType: string } | null>(null);
+  const [email, setEmail] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const floatingFileRef = useRef(floatingFile);
   const fileDataRef = useRef<string | null>(null);
   const dropFramesRef = useRef(0);
@@ -231,6 +234,33 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
   useEffect(() => {
     return () => { if (socket) socket.disconnect(); }
   }, [socket]);
+
+  const sendAnalysisEmail = async () => {
+    if (!email.trim() || !analysis) return;
+    setEmailSending(true);
+    try {
+      const url = import.meta.env.VITE_N8N_WEBHOOK_URL;
+      if (!url) throw new Error("Missing Webhook URL");
+      
+      const payload = {
+        type: "send_analysis",
+        email: email,
+        passion: passion,
+        analysis: analysis
+      };
+
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      setEmailSent(true);
+    } catch (error) {
+      console.error("Failed to send email", error);
+    } finally {
+      setEmailSending(false);
+    }
+  };
 
   // ─── Upload & analyse ───────────────────────────────────────────────────
   const handleAnalyse = async () => {
@@ -633,14 +663,44 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
         )}
 
         {/* ── Bottom Actions ──────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={onRestart}
-            className="group inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-purple-800/50 hover:bg-purple-800 border border-purple-600/50 text-white text-xl font-bold transition-all"
-          >
-            <Home size={24} />
-            Return to Home
-          </button>
+        <div className="flex flex-col gap-8 items-center">
+          {analysis && (
+            <div className="bg-purple-900/40 p-6 rounded-2xl border border-purple-700/50 w-full max-w-2xl text-center">
+              <h4 className="text-white font-semibold mb-4">Mail Your Full Resume Analysis</h4>
+              {!emailSent ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    placeholder="your@email.com" 
+                    className="flex-1 bg-purple-800/30 border border-purple-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                  />
+                  <button 
+                    onClick={sendAnalysisEmail} 
+                    disabled={emailSending || !email} 
+                    className="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {emailSending ? <Loader2 size={20} className="animate-spin" /> : <Mail size={20} />} 
+                    {emailSending ? "Sending..." : "Mail Analysis"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 text-green-400 p-4 bg-green-500/10 rounded-xl border border-green-500/30">
+                  <CheckCircle size={20} /> Analysis sent successfully!
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={onRestart}
+              className="group inline-flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-purple-800/50 hover:bg-purple-800 border border-purple-600/50 text-white text-xl font-bold transition-all"
+            >
+              <Home size={24} />
+              Return to Home
+            </button>
           {analysis && (
             <button
               onClick={handleDownloadPDF}
@@ -652,6 +712,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
           )}
         </div>
       </div>
+    </div>
 
       {/* Floating File Icon */}
       {floatingFile && (
