@@ -9,7 +9,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { io, Socket } from 'socket.io-client';
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://neuropath-ai-guide.onrender.com';
 
 interface CareerReportProps {
   onRestart: () => void;
@@ -52,7 +52,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
       .then(data => {
         if (data?.liveLinks?.length) setLiveLinks(data.liveLinks);
       })
-      .catch(() => {/* non-critical */});
+      .catch(() => {/* non-critical */ });
   }, [passion]);
 
   // ─── Drag & Drop handlers ───────────────────────────────────────────────
@@ -93,7 +93,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
   const [handLandmarker, setHandLandmarker] = useState<HandLandmarker | null>(null);
   const [laptopVideoActive, setLaptopVideoActive] = useState(false);
   const laptopVideoRef = useRef<HTMLVideoElement>(null);
-  const [floatingFile, setFloatingFile] = useState<{x: number, y: number, fileName: string, fileType: string} | null>(null);
+  const [floatingFile, setFloatingFile] = useState<{ x: number, y: number, fileName: string, fileType: string } | null>(null);
   const floatingFileRef = useRef(floatingFile);
   const fileDataRef = useRef<string | null>(null);
   const dropFramesRef = useRef(0);
@@ -175,27 +175,27 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
       const indexTip = landmarks[8];
       const newX = indexTip.x * window.innerWidth;
       const newY = indexTip.y * window.innerHeight;
-      
+
       setFloatingFile(prev => prev ? { ...prev, x: newX, y: newY } : null);
 
       // Mathematically robust Open Palm detection:
       // A finger is straight if its tip is further from the wrist than its middle joint (PIP).
       // If the finger is curled, the tip gets closer to the wrist than the PIP.
       const dist = (p1: any, p2: any) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
-      
+
       const isExtended = (tipIdx: number, pipIdx: number) => dist(landmarks[0], landmarks[tipIdx]) > dist(landmarks[0], landmarks[pipIdx]);
-      
+
       const thumbOpen = dist(landmarks[0], landmarks[4]) > dist(landmarks[0], landmarks[3]);
       const fingersOpen = isExtended(8, 6) && isExtended(12, 10) && isExtended(16, 14) && isExtended(20, 18);
-      
+
       const isOpenPalm = thumbOpen && fingersOpen;
-      
+
       if (isOpenPalm) {
         dropFramesRef.current += 1;
       } else {
         dropFramesRef.current = 0;
       }
-      
+
       // Require 15 consecutive frames (~0.25s) of open palm to trigger drop
       if (dropFramesRef.current > 15 && socket) {
         socket.emit('request-file-release', { roomId });
@@ -220,7 +220,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
         return;
       }
     }
-    
+
     if (laptopVideoActive) requestAnimationFrame(detectLaptopHand);
   }, [handLandmarker, laptopVideoActive, socket, roomId]);
 
@@ -322,11 +322,10 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer ${
-                isDragging
+              className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer ${isDragging
                   ? 'border-purple-400 bg-purple-800/40 scale-[1.01]'
                   : 'border-purple-700/60 hover:border-purple-500 hover:bg-purple-800/20'
-              }`}
+                }`}
               onClick={() => document.getElementById('resume-file-input')?.click()}
             >
               <input
@@ -351,8 +350,8 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
                     <CheckCircle size={16} />
                     Ready to analyse
                   </span>
-                  
-                  <button 
+
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       const url = URL.createObjectURL(file);
@@ -383,7 +382,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
                 <p className="text-white font-medium mb-4 text-lg">
                   {localStorage.getItem('magic_grab_room_id') === roomId ? "Waiting for file from your synced phone..." : "Scan to select document on phone"}
                 </p>
-                
+
                 {localStorage.getItem('magic_grab_room_id') !== roomId && (
                   <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
                     <QRCodeSVG value={qrUrl} size={180} />
@@ -391,16 +390,16 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
                 )}
                 <p className="text-purple-300 text-sm mt-4 break-all max-w-xs">{qrUrl}</p>
 
-                <button 
+                <button
                   onClick={connectOtherDevice}
                   className="mt-6 text-sm text-purple-300 hover:text-white underline underline-offset-4 transition-colors"
                 >
                   Connect a different device
                 </button>
-                
+
                 {/* Hidden video for laptop camera tracking */}
                 <video ref={laptopVideoRef} className="hidden" playsInline muted />
-                
+
                 {floatingFile && (
                   <div className="mt-6 flex items-center gap-3 text-green-400 bg-green-500/10 px-6 py-3 rounded-xl border border-green-500/30">
                     <Hand size={24} className="animate-pulse" />
@@ -480,13 +479,12 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
               {/* Progress bar */}
               <div className="w-full h-3 bg-purple-950/60 rounded-full overflow-hidden mb-3">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    analysis.careerFitScore >= 75
+                  className={`h-full rounded-full transition-all duration-700 ${analysis.careerFitScore >= 75
                       ? 'bg-gradient-to-r from-green-500 to-emerald-400'
                       : analysis.careerFitScore >= 50
-                      ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
-                      : 'bg-gradient-to-r from-red-500 to-rose-400'
-                  }`}
+                        ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                        : 'bg-gradient-to-r from-red-500 to-rose-400'
+                    }`}
                   style={{ width: `${analysis.careerFitScore}%` }}
                 />
               </div>
@@ -659,7 +657,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
 
       {/* Floating File Icon */}
       {floatingFile && (
-        <div 
+        <div
           className="fixed pointer-events-none z-50 flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 drop-shadow-2xl"
           style={{ left: floatingFile.x, top: floatingFile.y }}
         >
