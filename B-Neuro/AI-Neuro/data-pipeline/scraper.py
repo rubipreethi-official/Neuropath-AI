@@ -17,8 +17,7 @@ from db import rag_collection as knowledge
 from pymongo import MongoClient
 
 # ─── Shared MongoDB client (reuse db.py mongo) ──────────────────────────────
-_MONGO_URI = "mongodb+srv://rubipreethi2004_db_user:neuropath@cluster0.qjohmcm.mongodb.net/?appName=Cluster0"
-_client = MongoClient(_MONGO_URI)
+from db import client as _client
 _scrape_db = _client["neuropath_db"]
 
 # ─── NVIDIA Qwen API config ──────────────────────────────────────────────────

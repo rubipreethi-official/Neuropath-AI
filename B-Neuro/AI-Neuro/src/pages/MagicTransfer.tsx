@@ -30,7 +30,8 @@ export function MagicTransfer() {
       return;
     }
 
-    const newSocket = io(); 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+    const newSocket = io(backendUrl); 
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

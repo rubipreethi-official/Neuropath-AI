@@ -1,0 +1,25 @@
+app = "neuropath-n8n" # You may need to change this if the name is already taken
+primary_region = "sin" # Singapore (You can change this during deployment)
+
+[build]
+  image = "docker.n8n.io/n8nio/n8n:latest"
+
+[env]
+  N8N_PORT = "8080"
+  N8N_PROTOCOL = "https"
+  NODE_ENV = "production"
+  # This should match your app name above
+  WEBHOOK_URL = "https://neuropath-n8n.fly.dev/"
+  GENERIC_TIMEZONE = "Asia/Kolkata"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # These two lines enable Scale-to-Zero (Auto-sleep and Auto-wake)
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[mounts]
+  source = "n8n_data"
+  destination = "/home/node/.n8n"

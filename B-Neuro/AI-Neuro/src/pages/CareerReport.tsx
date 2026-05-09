@@ -9,7 +9,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { io, Socket } from 'socket.io-client';
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 interface CareerReportProps {
   onRestart: () => void;
@@ -130,7 +130,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
     if (socket) {
       socket.disconnect();
     }
-    const newSocket = io();
+    const newSocket = io(BACKEND_URL);
     setSocket(newSocket);
     newSocket.on('connect', () => newSocket.emit('join-room', id));
     newSocket.on('file-picked-up', (data) => {
@@ -242,7 +242,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
       formData.append('file', file);
       formData.append('field', passion || 'General Career');
 
-      const res = await fetch('http://localhost:5000/api/resume/analyze', {
+      const res = await fetch(`${BACKEND_URL}/api/resume/analyze`, {
         method: 'POST',
         body: formData,
       });
@@ -370,7 +370,7 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
             {/* Sync Phone Button */}
             <div className="mt-6 flex justify-center">
               <button
-                onClick={generateSync}
+                onClick={() => generateSync()}
                 className="flex items-center gap-3 px-6 py-3 rounded-xl bg-purple-800/40 border border-purple-600/50 hover:bg-purple-700/50 transition-colors text-purple-200 text-lg"
               >
                 <Smartphone size={22} />
