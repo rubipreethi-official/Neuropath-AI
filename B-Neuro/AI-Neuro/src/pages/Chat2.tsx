@@ -7,8 +7,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Brain, Send, ArrowLeft, ArrowRight, ChevronRight,
-  Mail, CheckCircle, Sparkles, Loader2,
+  Mail, CheckCircle, Sparkles, Loader2, Download
 } from "lucide-react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -22,7 +24,7 @@ interface RoadmapStep {
   phase: string; title: string; description: string; resources: string[];
 }
 
-type AppPage    = "chat" | "cards" | "roadmap" | "email";
+type AppPage    = "chat" | "cards" | "roadmap";
 type SkillLevel = "Complete Beginner" | "Some Experience" | "Intermediate" | "";
 
 interface Chat2Props {
@@ -467,11 +469,8 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
   const [roadmapLoading, setRoadmapLoading] = useState(false);
   const [roadmapError,   setRoadmapError]   = useState("");
 
-  // Page 4
-  const [email,        setEmail]        = useState("");
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailSent,    setEmailSent]    = useState(false);
-  const [emailError,   setEmailError]   = useState("");
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const roadmapContainerRef = useRef<HTMLDivElement>(null);
 
   // ── PAGE PERSISTENCE via sessionStorage ──────────────────────────────────
   useEffect(() => {
@@ -502,8 +501,7 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
       try { setCards(JSON.parse(savedCards)); } catch { /* ignore */ }
     }
 
-    setEmailSent(false);
-    setEmail("");
+    // Email logic removed
   }, []);
 
   useEffect(() => { sessionStorage.setItem("neuropath_page", page); }, [page]);
@@ -691,28 +689,26 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
     }
   }, [selectedCard]);
 
-  // ── PAGE 4: Send email ────────────────────────────────────────────────────
-  const sendEmail = async () => {
-    if (!email.trim()) return;
-    setEmailSending(true);
-    setEmailError("");
-    setEmailSent(false);
-
-    const prompt =
-      `Student ${userName} (email: ${email}) chose "${selectedCard?.title}" career path. ` +
-      `Level: ${skillLevel}. Interest: ${interest}. ` +
-      `Steps: ${roadmapSteps.map((s, i) => `${i + 1}. ${s.title}`).join(", ")}. ` +
-      `Write a short encouraging 2-paragraph email confirming their career roadmap. Plain text only.`;
-
+  const downloadPDF = async () => {
+    if (!roadmapContainerRef.current) return;
+    setPdfGenerating(true);
     try {
-      const result = await callN8n(prompt, "send_email", email);
-      console.log("[email] n8n response:", result);
-      setEmailSent(true);
-    } catch (e) {
-      console.error("[email] failed:", e);
-      setEmailError("Could not send email right now. You can still continue!");
+      const canvas = await html2canvas(roadmapContainerRef.current, {
+        backgroundColor: "#2e1065", // purple-950 roughly
+        scale: 2,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`${selectedCard?.title?.replace(/\s+/g, '_') || 'career'}_roadmap.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF", error);
     } finally {
-      setEmailSending(false);
+      setPdfGenerating(false);
     }
   };
 
@@ -734,15 +730,9 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
       action: () => setPage("roadmap"),
     },
     roadmap: {
-      label: "Get Email",
-      // Can go forward only if roadmap is fully generated
-      canGo: roadmapSteps.length > 0 && !roadmapLoading,
-      action: () => setPage("email"),
-    },
-    email: {
       label: "Continue",
-      // Always can proceed from email page
-      canGo: true,
+      // Always can proceed from roadmap page now if steps generated
+      canGo: roadmapSteps.length > 0 && !roadmapLoading,
       action: () => onComplete(interest),
     },
   };
@@ -939,100 +929,26 @@ function Chat2({ onComplete, userName, onBack }: Chat2Props) {
         )}
 
         {!roadmapLoading && !roadmapError && roadmapSteps.length > 0 && (
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto" ref={roadmapContainerRef}>
             {roadmapSteps.map((step, i) => (
               <RoadmapStepItem key={i} step={step} index={i} isLast={i === roadmapSteps.length - 1} />
             ))}
-            <div className="mt-12 text-center">
-              <BigCTA onClick={() => setPage("email")}>
-                <Mail size={22} /> Get My Roadmap on Email <ChevronRight size={20} />
+            <div className="mt-12 text-center flex flex-col items-center" data-html2canvas-ignore="true">
+              <BigCTA onClick={downloadPDF} disabled={pdfGenerating}>
+                {pdfGenerating ? <Loader2 size={22} className="animate-spin" /> : <Download size={22} />} 
+                {pdfGenerating ? "Generating PDF..." : "Download Roadmap as PDF"}
               </BigCTA>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // PAGE 4 — EMAIL
-  // ══════════════════════════════════════════════════════════════════════════
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-purple-950 flex items-center justify-center px-6 py-12">
-      <div className="max-w-3xl w-full">
-        <NavBar
-          onBack={() => setPage("roadmap")}
-          onForward={fwd.action}
-          canGoForward={fwd.canGo}
-          forwardLabel={fwd.label}
-        />
-
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-800/50 border-2 border-purple-600/50 mb-6">
-            <Mail size={40} className="text-purple-300" />
-          </div>
-          <div className="inline-block bg-purple-800/40 border border-purple-600/40 text-purple-300 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase mb-4">Almost There!</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Get Your Career Roadmap</h1>
-          <p className="text-xl text-purple-200 max-w-2xl mx-auto">We'll send your full personalized roadmap to your email</p>
-        </div>
-
-        <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-700/50 rounded-2xl p-6 mb-8 max-w-lg mx-auto">
-          <p className="text-purple-400 text-xs tracking-widest uppercase mb-4">✦ Your Email Will Include</p>
-          {[`Your Interest: ${interest}`, `Chosen Career: ${selectedCard?.title}`, `Your Level: ${skillLevel}`,
-            `${roadmapSteps.length} Personalized Roadmap Steps`, "Resources & Tools for each step", "Pro tips & next actions"
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 mb-3">
-              <CheckCircle size={16} className="text-purple-400 flex-shrink-0" />
-              <span className="text-purple-200 text-sm">{item}</span>
-            </div>
-          ))}
-        </div>
-
-        {!emailSent ? (
-          <div className="max-w-md mx-auto text-center">
-            <p className="text-purple-300 text-sm mb-4">Enter your email to receive your roadmap:</p>
-            <div className="flex gap-3 mb-4">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") sendEmail(); }}
-                placeholder="your@email.com"
-                className="flex-1 bg-purple-800/30 border border-purple-700/50 rounded-xl px-4 py-3 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
-              <button onClick={sendEmail} disabled={!email.trim() || emailSending}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm">
-                {emailSending ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
-                {emailSending ? "Sending..." : "Send"}
+              
+              <button onClick={() => onComplete(interest)} className="mt-8 text-purple-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-semibold tracking-wide">
+                Continue to Best Institutions <ChevronRight size={16} />
               </button>
             </div>
-            {emailError && <p className="text-red-400 text-xs mb-4">{emailError}</p>}
-            <p className="text-purple-500 text-xs mb-8">— or skip this and continue —</p>
-          </div>
-        ) : (
-          <div className="text-center mb-8" style={{ animation: "c2FadeUp 0.5s ease" }}>
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-900/30 border-2 border-green-600/40 mb-4">
-              <CheckCircle size={32} className="text-green-400" />
-            </div>
-            <h3 className="text-white text-2xl font-bold mb-2">Sent! ✨</h3>
-            <p className="text-purple-300 text-sm">Check <strong className="text-purple-200">{email}</strong></p>
-            <button onClick={() => { setEmailSent(false); setEmail(""); setEmailError(""); }}
-              className="mt-4 text-purple-400 hover:text-purple-200 text-xs underline transition-colors">
-              Send to a different email
-            </button>
           </div>
         )}
-
-        <div className="text-center">
-          <BigCTA onClick={() => onComplete(interest)}>
-            <Brain size={24} />
-            Continue to Best Institutions &amp; Scholarships
-            <ChevronRight size={22} />
-          </BigCTA>
-          <p className="text-purple-300 text-sm mt-4">
-            Get institution &amp; scholarship recommendations for{" "}
-            <span className="text-purple-200 font-semibold">{selectedCard?.title ?? interest}</span>
-          </p>
-        </div>
       </div>
     </div>
   );
+
 }
 
 export default Chat2;

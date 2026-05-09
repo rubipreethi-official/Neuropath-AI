@@ -383,11 +383,9 @@ export function CareerReport({ onRestart, passion, userName }: CareerReportProps
                   {localStorage.getItem('magic_grab_room_id') === roomId ? "Waiting for file from your synced phone..." : "Scan to select document on phone"}
                 </p>
 
-                {localStorage.getItem('magic_grab_room_id') !== roomId && (
-                  <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
-                    <QRCodeSVG value={qrUrl} size={180} />
-                  </div>
-                )}
+                <div className="bg-white p-4 rounded-xl shadow-xl shadow-purple-900/50">
+                  <QRCodeSVG value={qrUrl} size={180} />
+                </div>
                 <p className="text-purple-300 text-sm mt-4 break-all max-w-xs">{qrUrl}</p>
 
                 <button
