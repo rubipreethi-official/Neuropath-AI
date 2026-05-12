@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GraduationCap, Laptop, MapPin, ExternalLink, ArrowRight, ArrowLeft, Loader2, RefreshCw, Globe, Link2 } from 'lucide-react';
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface SkillDevelopmentProgramsProps {
   onContinue: () => void;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lightbulb, HelpCircle, ArrowLeft, Send, Sparkles, Loader2 } from 'lucide-react';
 
-const BACKEND_URL = 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface SkillPassionQuestionProps {
   onAnswer: (knowsSkill: boolean, passion?: string) => void;
